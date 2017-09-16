@@ -3,6 +3,10 @@ IDE: Pycharm
 // TODO: program versions used in project
 
 
+Run project by:
+	- python go.py [ audioFile ]
+
+
 Full env setup:
 1. python 3.6.2 version
 	- add Pythons folder path to system PATH variable,
@@ -20,3 +24,9 @@ Full env setup:
 5. Install NumPy - You may use 'numpy-1.13.1-cp36-none-win_amd64' file which is included in project files, 
    or download it from: https://pypi.python.org/pypi/numpy.
 	- pip install numpy-1.13.1-cp36-none-win_amd64
+
+6.  Install PuAudio - You may use 'PyAudio-0.2.11-cp36-cp36m-win_amd64.whl' file which is included in project files, 
+   or download it from: https://pypi.python.org/pypi/PyAudio#downloads
+	- pip install PyAudio-0.2.11-cp36-cp36m-win_amd64.whll
+
+

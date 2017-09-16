@@ -1,2 +1,4 @@
 resources/
 pydub/
+.idea/
+__pychache__/
