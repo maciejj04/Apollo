@@ -31,7 +31,8 @@ class Ear():
     
     def __init__(self, device=None, rate=None, updatesPerSecond=10):
         self.p = pyaudio.PyAudio()
-        self.chunk = 4096  # gets replaced automatically
+        self.chunk = 4096  # gets replaced automatically - leave it like that, chunk has to  be settled otherwise an Exception occurs
+        #chunk should be sette=led when inout device rate and updates per second are known. initaiate()
         self.updatesPerSecond = updatesPerSecond
         self.chunksRead = 0
         self.device = device
@@ -47,18 +48,21 @@ class Ear():
         print("SOMETHING'S WRONG! I can't figure out how to use DEV", device)
         return None
     
-    def valid_test(self, device, rate=44100):
+    def valid_test(self, deviceIndex, rate=44100):
         """given a device ID and a rate, return TRUE/False if it's valid."""
         try:
-            self.info = self.p.get_device_info_by_index(device)
-            if not self.info["maxInputChannels"] > 0:
+            self.info = self.p.get_device_info_by_index(deviceIndex)
+            if self.info["maxInputChannels"] == 0:
                 return False
+            
             stream = self.p.open(format=pyaudio.paInt16, channels=1,
-                                 input_device_index=device, frames_per_buffer=self.chunk,
+                                 input_device_index=deviceIndex, frames_per_buffer=self.chunk,
                                  rate=int(self.info["defaultSampleRate"]), input=True)
+
             stream.close()
             return True
-        except:
+        except ValueError as e:
+            print("I/O error({0}): {1}".format(e.errno, e.strerror))
             return False
     
     def valid_input_devices(self):
@@ -90,7 +94,7 @@ class Ear():
             self.device = self.valid_input_devices()[0]  # pick the first one
             self.rate = self.valid_low_rate(self.device)
         self.datax = np.arange(self.chunk) / float(self.rate)
-        print("datax : %s " % self.datax.size)
+        
         msg = 'recording from "%s" ' % self.info["name"]
         msg += '(device %d) ' % self.device
         msg += 'at %d Hz' % self.rate
@@ -112,6 +116,9 @@ class Ear():
         try:
             self.data = np.fromstring(self.stream.read(self.chunk), dtype=np.int16)
             self.fftx, self.fft = getFFT(self.data, self.rate)
+            list = self.fft.tolist()
+            # TODO: why the hell length of a list is 220!
+           
         
         except Exception as E:
             print(" -- exception! terminating...")
@@ -139,16 +146,17 @@ class Ear():
         self.dataFiltered = None  # same
         self.stream = self.p.open(format=pyaudio.paInt16, channels=1,
                                   rate=self.rate, input=True, frames_per_buffer=self.chunk)
+        print("Rate is: %d"%self.rate)
         self.stream_thread_new()
 
 
-if __name__ == "__main__":
-    ear = Ear(updatesPerSecond=10)  # optinoally set sample rate here
-    ear.stream_start()  # goes forever
-    lastRead = ear.chunksRead
-    while True:
-        while lastRead == ear.chunksRead:
-            time.sleep(.01)
-        print(ear.chunksRead, len(ear.data))
-        lastRead = ear.chunksRead
-    print("DONE")
+# if __name__ == "__main__":
+#     ear = Ear(updatesPerSecond=10)  # optinoally set sample rate here
+#     ear.stream_start()  # goes forever
+#     lastRead = ear.chunksRead
+#     while True:
+#         while lastRead == ear.chunksRead:
+#             time.sleep(.01)
+#         print(ear.chunksRead, len(ear.data))
+#         lastRead = ear.chunksRead
+#     print("DONE")

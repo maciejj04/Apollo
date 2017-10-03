@@ -16,3 +16,8 @@ def getFFT(data, rate):
     # fft=10*np.log10(fft)
     freq = np.fft.fftfreq(len(fft), 1.0 / rate)
     return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
+
+
+        
+        
+        

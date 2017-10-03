@@ -29,4 +29,12 @@ Full env setup:
    or download it from: https://pypi.python.org/pypi/PyAudio#downloads
 	- pip install PyAudio-0.2.11-cp36-cp36m-win_amd64.whll
 
+	
+	
+Troubleshoot:
+	In case of: ImportError: DLL load failed: %1 nie jest prawidłową aplikacją systemu Win32.
+		- pip uninstall pyqt4
+		- pip install pyqt4 ^^ 
+		
+	This is because QtGui file was modified (why) and have - bytes.
 
