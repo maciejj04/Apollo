@@ -1,6 +1,6 @@
 resources/
 pydub/
 .idea/
-__pychache__/
+__pycache__/
 TestScript.py
 *.wav
