@@ -10,6 +10,7 @@ import time
 import numpy as np
 import threading
 from helper_functions import *
+from CommonAudioInfo import CommonAudioInfo
 
 
 class Ear():
@@ -92,6 +93,7 @@ class Ear():
         if not self.valid_test(self.device, self.rate):
             print("guessing a valid microphone device/rate...")
             self.device = self.valid_input_devices()[0]  # pick the first one
+            CommonAudioInfo.setFields(None,None,)
             self.rate = self.valid_low_rate(self.device)
         self.datax = np.arange(self.chunk) / float(self.rate)
         
@@ -116,13 +118,10 @@ class Ear():
         try:
             self.data = np.fromstring(self.stream.read(self.chunk), dtype=np.int16)
             self.fftx, self.fft = getFFT(self.data, self.rate)
-            list = self.fft.tolist()
-            # TODO: why the hell length of a list is 220!
-           
         
         except Exception as E:
             print(" -- exception! terminating...")
-            print(E, "\n" * 5)
+            print(E, "\n" * 3)
             self.keepRecording = False
         if self.keepRecording:
             self.stream_thread_new()
@@ -144,9 +143,10 @@ class Ear():
         self.data = None  # will fill up with threaded recording data
         self.fft = None
         self.dataFiltered = None  # same
-        self.stream = self.p.open(format=pyaudio.paInt16, channels=1,
+        CommonAudioInfo.frameRate = self.rate
+        self.stream = self.p.open(format=pyaudio.paInt16, channels=CommonAudioInfo.numberOfChannels,
                                   rate=self.rate, input=True, frames_per_buffer=self.chunk)
-        print("Rate is: %d"%self.rate)
+
         self.stream_thread_new()
 
 

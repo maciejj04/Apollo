@@ -2,3 +2,5 @@ resources/
 pydub/
 .idea/
 __pychache__/
+TestScript.py
+*.wav

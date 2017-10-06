@@ -29,8 +29,11 @@ Full env setup:
    or download it from: https://pypi.python.org/pypi/PyAudio#downloads
 	- pip install PyAudio-0.2.11-cp36-cp36m-win_amd64.whll
 
-	
-	
+
+Optional:
+	- python -m pip install matplotlib
+
+
 Troubleshoot:
 	In case of: ImportError: DLL load failed: %1 nie jest prawidłową aplikacją systemu Win32.
 		- pip uninstall pyqt4
