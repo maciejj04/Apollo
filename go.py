@@ -17,7 +17,7 @@ def getAudioFile():
     # TODO: check whether pointed file exists!
     filePath = ''
     if len(sys.argv) < 2:
-        filePath = './resources/tone.wav'
+        filePath = './resources/pra.wav'  # tone.wav
     else:
         filePath = sys.argv[1]
     

@@ -29,7 +29,7 @@ class Ear():
     """
     
     def __init__(self, deviceIndex=None):
-        #self.chunk = 4096
+
         self.p = pyaudio.PyAudio()
         if deviceIndex is None:
             self.deviceIndex = self.getValidDeviceIndex()
@@ -81,7 +81,7 @@ class Ear():
             stream.close()
             return True
         except ValueError as e:
-            print("I/O error({0}): {1}".format(e.errno, e.strerror))
+            print("ValueError Exception Occured: I/O error({0}): {1}".format(e.errno, e.strerror))
             return False
     
     def valid_input_devices(self):

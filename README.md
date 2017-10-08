@@ -29,6 +29,8 @@ Full env setup:
    or download it from: https://pypi.python.org/pypi/PyAudio#downloads
 	- pip install PyAudio-0.2.11-cp36-cp36m-win_amd64.whll
 
+7. Install ffmpeg?
+
 
 Optional:
 	- python -m pip install matplotlib
