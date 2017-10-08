@@ -22,25 +22,21 @@ def getFFT(data, rate):
     return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
 
 
-def generateSampleWaveFile():
+def generateSampleWaveFile(filePath, fileName, freq=440.0, frameRate=44100, sampleWidth=2, nframes=40000):
     # http://stackoverflow.com/questions/3637350/how-to-write-stereo-wav-files-in-python
     # http://www.sonicspot.com/guide/wavefiles.html
-    freq = 440.0
-    fname = "test.wav"
-    frate = 11025.0
+    fullFilePath = filePath+fileName
     amp = 64000.0
     nchannels = 1
-    sampwidth = 2
-    framerate = int(frate)
-    nframes = 40000
+    framerate = int(frameRate)
     comptype = "NONE"
     compname = "not compressed"
-    data = [math.sin(2 * math.pi * freq * (x / frate)) for x in range(nframes)]
+    data = [math.sin(2 * math.pi * freq * (x / frameRate)) for x in range(nframes)]
     print(len(data))
     print(data[100])
-    wav_file = wave.open(fname, 'w')
+    wav_file = wave.open(fullFilePath, 'w')
     wav_file.setparams(
-        (nchannels, sampwidth, framerate, nframes, comptype, compname))
+        (nchannels, sampleWidth, framerate, nframes, comptype, compname))
     for v in data:
         wav_file.writeframes(struct.pack('h', int(v * amp / 2)))
     wav_file.close()
