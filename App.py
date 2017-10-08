@@ -3,6 +3,7 @@ from Ear import Ear
 import pyqtgraph
 import ui_main
 import numpy as np
+from CommonAudioInfo import CommonAudioInfo
 
 class App(QtGui.QMainWindow, ui_main.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -12,13 +13,13 @@ class App(QtGui.QMainWindow, ui_main.Ui_MainWindow):
         self.personalFFTChart.plotItem.showGrid(True, True, 0.7)
         self.maxFFT = 0
         self.maxPCM = 0
-        self.ear = Ear(rate=44100, updatesPerSecond=100)
+        self.ear = Ear()
         self.ear.stream_start()
         
         self.fileFFTChart.plotItem.showGrid(True, True, 0.7)
     
     def update(self):
-        if not self.ear.data is None and not self.ear.fft is None:
+        if self.ear.data is not None and self.ear.fft is not None:
             pcmMax = np.max(np.abs(self.ear.data))
             if pcmMax > self.maxPCM:
                 self.maxPCM = pcmMax

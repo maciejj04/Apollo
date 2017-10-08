@@ -22,10 +22,10 @@ def getAudioFile():
         filePath = sys.argv[1]
     
     audio = readFile(filePath)
-    Audio.setFields(audio.getnchannels(), audio.getsampwidth(), audio.getframerate(),
+    Audio.setFields(filePath, audio.getnchannels(), audio.getsampwidth(), audio.getframerate(),
                     audio.getnframes(), audio.getcompname(), audio.getcompname())
-    Logger.logAudioInfo(filePath)
-    
+    Logger.logAudioInfo()
+
     return audio
 
 
@@ -34,6 +34,6 @@ if __name__ == "__main__":
     form = App()
     form.show()
     drawOnce(getAudioFile(), form.fileFFTChart)
-    # form.update()  # start with something
+    form.update()  # start with something
     app.exec_()
     print("DONE")

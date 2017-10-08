@@ -17,8 +17,8 @@ def getFFT(data, rate):
     fft = np.abs(fft)
     # fft=10*np.log10(fft)
     freq = np.fft.fftfreq(len(fft), 1.0 / rate)
-    plt.plot(freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)])
-    plt.show()
+    # plt.plot(freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)])
+    # plt.show()
     return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
 
 
@@ -46,6 +46,12 @@ def generateSampleWaveFile():
     wav_file.close()
     
 def findHighestFreq():
+    ''' should take as an argument:
+            - raw (np.darray type) audio data
+            
+    '''
+ 
+    
     nframes = 40000
     fname = "test.wav"
     frate = 11025.0
@@ -58,7 +64,6 @@ def findHighestFreq():
     w = np.fft.fft(data)
     freqs = np.fft.fftfreq(len(w))
     print(freqs.min(), freqs.max())
-    # (-0.5, 0.499975)
 
     # Find the peak in the coefficients
     idx = np.argmax(np.abs(w))

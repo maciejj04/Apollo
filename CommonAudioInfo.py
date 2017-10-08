@@ -1,12 +1,15 @@
+from pyaudio import paInt16
+
 class CommonAudioInfo:
-    numberOfFrames = None
+    numberOfFrames = None  # defines nr of frames which are going to be recorded(similar to length of input file)
     numberOfChannels = 1
-    sampleWidth = None
+    sampleWidthInBytes = 2
+    sampleWidthPyAudio = paInt16
     frameRate = None
     compType = None
     compName = None
     
-    updatesPerSecond = 10   #SHould this be moved to InterpretEngine?
+    updatesPerSecond = 10   #Should this be moved to InterpretEngine?
     #chunk = lambda self: int(self.frameRate/self.updatesPerSecond)
 
     @classmethod
@@ -18,9 +21,10 @@ class CommonAudioInfo:
     def getInformations(self):
         return self.numberOfChannels, self.sampleWidth, self.frameRate, self.numberOfFrames, self.compType, self.compName
 
-    def setFields(self, nchannels, sampwidth, framerate, nframes, comptype, compname):
+    def setFields(self, nchannels, sampwidthInBytes, sampleWidthPyAudio, framerate, nframes, comptype, compname):
         self.numberOfChannels = nchannels
-        self.sampleWidth = sampwidth
+        self.sampleWidthInBytes = sampwidthInBytes
+        self.sampleWidthPyAudio = sampleWidthPyAudio
         self.frameRate = framerate
         self.numberOfFrames = nframes
         self.compType = comptype
