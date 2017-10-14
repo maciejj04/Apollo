@@ -19,9 +19,10 @@ class Converter:
     @classmethod
     def adjustAudioFormat(self, wav):
         rad = wav.readframes(wav.getnframes())  # Raw audio data (in bytes)
+        
         if wav.getnchannels() != Cai.numberOfChannels:
             # Can cause errors if some day Cai.numberOfChannels will be more than 1
-            rad = audioop.tomono(rad, wav.getsampwidth(), 0.5, 0.5)  # remains both channels with the same volume
+            rad = audioop.tomono(rad, wav.getsampwidth(), 0.5, 0.5)  # takes half of left and right chanel
         
         if wav.getframerate() != Cai.frameRate:
             # TODO: Error prone!  ratecv() returns a TUPLE!!!!!!!!!!!!!!!!

@@ -10,7 +10,7 @@ class CommonAudioInfo:
     compType = None
     compName = None
     
-    updatesPerSecond = 100  # Should this be moved to InterpretEngine?
+    updatesPerSecond = 10
     
     # chunk = lambda self: int(self.frameRate/self.updatesPerSecond)
     
@@ -18,14 +18,13 @@ class CommonAudioInfo:
     def getChunk(self):
         return int(self.frameRate / self.updatesPerSecond)
     
-    # getInformationsAsATuple
     @classmethod
     def getInformations(self):
-        return self.numberOfChannels, self.sampleWidthInBytes, self.frameRate, self.numberOfFrames, self.compType, self.compName
+        return self.numberOfChannels, self.sampleWidthInBytes, self.frameRate, self.numberOfFrames, self.compType, self.compName, self.updatesPerSecond
     
-    def setFields(self, nchannels, sampwidthInBytes, sampleWidthPyAudio, framerate, nframes, comptype, compname):
+    def setFields(self, nchannels, sampleWidthInBytes, sampleWidthPyAudio, framerate, nframes, comptype, compname):
         self.numberOfChannels = nchannels
-        self.sampleWidthInBytes = sampwidthInBytes
+        self.sampleWidthInBytes = sampleWidthInBytes
         self.sampleWidthPyAudio = sampleWidthPyAudio
         self.frameRate = framerate
         self.numberOfFrames = nframes

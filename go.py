@@ -12,7 +12,7 @@ from src.tools.Logger import Logger
 
 
 def getInputArguments():
-    return './resources/pra.wav' if len(sys.argv) < 2 else sys.argv[1]
+    return './resources/tone.wav' if len(sys.argv) < 2 else sys.argv[1]
 
 
 def validateFilePath(filePath):
@@ -43,6 +43,6 @@ if __name__ == "__main__":
     form = App()
     form.show()
     drawOnce(getAudioFile(), form.fileFFTChart)
-    form.update()  # start with something
+    #form.update()  # start with something
     app.exec_()
     print("DONE")

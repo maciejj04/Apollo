@@ -19,6 +19,7 @@ class InterpretEngine:
         self.data = data
         self.fft = np.fft.fft(self.data)
         self.freqs = np.fft.fftfreq(len(self.fft))
+        print("freqs len: %d" % len(self.freqs))
     
     def findHighestFreq(self, startFrame: int = 0, endFrame: int = Cai.numberOfFrames) -> int:
         """
@@ -31,7 +32,7 @@ class InterpretEngine:
         
         # Find the peak in the coefficients
         idx = np.argmax(np.abs(self.fft[startFrame:endFrame]))
-        freq = self.freqs[idx]
+        freq = self.freqs[startFrame+idx]
         freq_in_hertz = abs(freq * Cai.frameRate)
         return freq_in_hertz
     
@@ -51,6 +52,20 @@ class InterpretEngine:
         """
         self.minFrequency = freqs[0]
         self.maxFrequency = freqs[1]
+
+    @staticmethod
+    def findHighestFreq(data: np.ndarray) -> int:
+        """
+        :return: highestFrequency in hertz
+        """
+    
+        fft = np.fft.fft(data)
+        freqs = np.fft.fftfreq(len(fft))
+    
+        idx = np.argmax(np.abs(fft))
+        freq = freqs[idx]
+        freq_in_hertz = abs(freq * Cai.frameRate)
+        return freq_in_hertz
     
     def compute(self):
         pass

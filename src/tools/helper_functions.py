@@ -7,7 +7,7 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 def my_range(start, end, step):
     while start <= end:
-        yield start
+        yield start if start < end else end
         start += step
 
 
@@ -32,8 +32,7 @@ def generateSampleWaveFile(filePath, fileName, freq=440.0, frameRate=44100, samp
     comptype = "NONE"
     compname = "not compressed"
     data = [math.sin(2 * math.pi * freq * (x / frameRate)) for x in range(nframes)]
-    print(len(data))
-    print(data[100])
+
     wav_file = wave.open(filePath + fileName, 'w')
     wav_file.setparams(
         (nchannels, sampleWidth, framerate, nframes, comptype, compname))

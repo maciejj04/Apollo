@@ -24,8 +24,10 @@ class Logger:
                          - nchannels: {}
                          - sampwidth {} (in bytes)
                          - comptype {}
-                         - compname {}"""\
-            .format(Cai.getChunk(), Cai.frameRate, Cai.numberOfChannels, Cai.sampleWidthInBytes, Cai.compType, Cai.compName)
+                         - compname {}
+                         - updatesPerSecond {}"""\
+            .format(Cai.getChunk(), Cai.frameRate, Cai.numberOfChannels, Cai.sampleWidthInBytes, Cai.compType,
+                    Cai.compName, Cai.updatesPerSecond)
         print(infoString)
         # TODO: save string to file.
     

@@ -1,7 +1,7 @@
 class BaseProcessingUtils:
 
     def getHighestFrequency(self, data):
-        pass;
+        pass
 
     def findLoudestFrequency(self, list):  # arg type has to be regular (non numpy type) list
         max = 0

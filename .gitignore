@@ -1,6 +1,7 @@
 resources/
 .idea/
-__pycache__/
+src/UI/__pycache__/
 TestScript.py
 *.wav
 dependencies/
+tmp/
