@@ -1,9 +1,10 @@
-from PyQt4 import QtGui, QtCore
-from Ear import Ear
-import pyqtgraph
-import ui_main
 import numpy as np
-from CommonAudioInfo import CommonAudioInfo
+import pyqtgraph
+from PyQt4 import QtGui, QtCore
+
+from src.Engine.Ear import Ear
+from src.UI import ui_main
+
 
 class App(QtGui.QMainWindow, ui_main.Ui_MainWindow):
     def __init__(self, parent=None):

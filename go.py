@@ -1,29 +1,38 @@
+import os
 import sys
 
 from PyQt4 import QtGui
 
-from App import App
-from Logger import Logger
-from ReadFile import readFile
-from drawOnce import drawOnce
-from Audio import Audio
+from src.Commons.Audio import Audio
+from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
+from src.Engine.ReadFile import readFile
+from src.UI.App import App
+from src.UI.drawOnce import drawOnce
+from src.tools.Logger import Logger
 
 
-def hasInputArguments():
-    pass
+def getInputArguments():
+    return './resources/pra.wav' if len(sys.argv) < 2 else sys.argv[1]
+
+
+def validateFilePath(filePath):
+    if not os.path.exists(filePath):
+        Logger.info("Path to file does not exist! [{filepath}]".format(filepath=filePath))
+        raise ValueError("Path to file does not exist! [{filepath}]".format(filepath=filePath))
+    
+    return True
 
 
 def getAudioFile():
-    # TODO: check whether pointed file exists!
-    filePath = ''
-    if len(sys.argv) < 2:
-        filePath = './tmp/440_22050.wav'  # tone.wav
-    else:
-        filePath = sys.argv[1]
     
+    filePath = getInputArguments()
+    validateFilePath(filePath)
+
     audio = readFile(filePath)
     Audio.setFields(filePath, audio.getnchannels(), audio.getsampwidth(), audio.getframerate(),
                     audio.getnframes(), audio.getcompname(), audio.getcompname())
+    Cai.numberOfFrames = audio.getnframes()
+
     Logger.logAudioInfo()
 
     return audio

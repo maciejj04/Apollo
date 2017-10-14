@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import math
 import wave
 import struct
+from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 def my_range(start, end, step):
     while start <= end:
@@ -25,7 +26,6 @@ def getFFT(data, rate):
 def generateSampleWaveFile(filePath, fileName, freq=440.0, frameRate=44100, sampleWidth=2, nframes=40000):
     # http://stackoverflow.com/questions/3637350/how-to-write-stereo-wav-files-in-python
     # http://www.sonicspot.com/guide/wavefiles.html
-    fullFilePath = filePath+fileName
     amp = 64000.0
     nchannels = 1
     framerate = int(frameRate)
@@ -34,36 +34,14 @@ def generateSampleWaveFile(filePath, fileName, freq=440.0, frameRate=44100, samp
     data = [math.sin(2 * math.pi * freq * (x / frameRate)) for x in range(nframes)]
     print(len(data))
     print(data[100])
-    wav_file = wave.open(fullFilePath, 'w')
+    wav_file = wave.open(filePath + fileName, 'w')
     wav_file.setparams(
         (nchannels, sampleWidth, framerate, nframes, comptype, compname))
     for v in data:
         wav_file.writeframes(struct.pack('h', int(v * amp / 2)))
     wav_file.close()
     
-def findHighestFreq():
-    ''' should take as an argument:
-            - raw (np.darray type) audio data
-            
-    '''
- 
     
-    nframes = 40000
-    fname = "test.wav"
-    frate = 11025.0
-    wav_file = wave.open(fname, 'r')
-    data = wav_file.readframes(nframes)
-    wav_file.close()
-    data = struct.unpack('{n}h'.format(n=nframes), data)
-    data = np.array(data)
 
-    w = np.fft.fft(data)
-    freqs = np.fft.fftfreq(len(w))
-    print(freqs.min(), freqs.max())
 
-    # Find the peak in the coefficients
-    idx = np.argmax(np.abs(w))
-    freq = freqs[idx]
-    freq_in_hertz = abs(freq * frate)
-    print(freq_in_hertz)
-    # 439.8975
+

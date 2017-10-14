@@ -1,5 +1,4 @@
 resources/
-pydub/
 .idea/
 __pycache__/
 TestScript.py

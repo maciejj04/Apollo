@@ -1,6 +1,4 @@
-import sys
-sys.path.append('../pydub/')
-from pydub.pydub import AudioSegment
+from pydub import AudioSegment
 
 def getAudioFileInformations(filePath):
     file = AudioSegment.from_file(filePath)

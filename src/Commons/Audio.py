@@ -1,12 +1,12 @@
 class Audio:
-    filePath = None
+    filePath: str = None
     data = None
-    numberOfFrames = None
-    numberOfChannels = None
-    sampleWidth = None
-    frameRate = None
-    compType = None
-    compName = None
+    numberOfFrames: int = None
+    numberOfChannels: int = None
+    sampleWidth: int = None
+    frameRate: int = None
+    compType: str = None
+    compName: str = None
         
     #getInformationsAsATuple
     @classmethod
@@ -21,7 +21,7 @@ class Audio:
 
     @classmethod
     def setFields(self,filePath, nchannels, sampwidth, framerate, nframes, comptype, compname):
-        ''' Sets class variables(just as static fields) to goven values'''
+        """ Sets class variables(just as static fields) to goven values"""
         self.filePath = filePath
         self.numberOfChannels = nchannels
         self.sampleWidth = sampwidth
@@ -31,7 +31,7 @@ class Audio:
         self.compName = compname
 
     def withFields(self, filePath, nchannels, sampwidth, framerate, nframes, comptype, compname):
-        ''' Sets class INSTANCE fields to given values and returns object instance'''
+        """ Sets class INSTANCE fields to given values and returns object instance"""
         self.filePath = filePath
         self.numberOfChannels = nchannels
         self.sampleWidth = sampwidth

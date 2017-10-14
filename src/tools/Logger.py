@@ -1,12 +1,14 @@
-from Audio import Audio
-from CommonAudioInfo import CommonAudioInfo as Cai
+from datetime import datetime
+
+from src.Commons.Audio import Audio
+from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 
 class Logger:
     #static method - code that belongs to a class, but that doesn't use the object itself at all.
     @staticmethod
-    def info(infoString):
-        print(infoString)
+    def info(infoString: str):
+        print('['+str(datetime.now())+'] '+infoString)
         #TODO: add writing to file
     
         
@@ -29,7 +31,7 @@ class Logger:
     
     
     @staticmethod
-    def logAudioInfo(audio=None):
+    def logAudioInfo(audio: Audio=None):
         
         if audio is None:
             audio = Audio()#get static fields when nothing passed
