@@ -10,6 +10,7 @@ import threading
 from src.tools.helper_functions import *
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.Logger import Logger
+from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
 
 
 class Ear:
@@ -27,40 +28,39 @@ class Ear:
         frequencies to be analyzed if using a FFT later
     """
     
-    def __init__(self, deviceIndex=None):
+    def __init__(self):
         
         self.p = pyaudio.PyAudio()
-        if deviceIndex is None:
-            self.deviceIndex = self.getValidDeviceIndex()
-        
+        Idi.currentlyUsedDeviceIndex = self.getValidDeviceIndex()
         self.setCommonAudioInformations()
         self.datax = np.arange(Cai.getChunk()) / float(Cai.frameRate)
         
         Logger.info("Using: {name} (device {device}) at {hz} Hz"
-                    .format(name=self.info["name"], device=self.deviceIndex, hz=Cai.frameRate))
+                    .format(name=self.info["name"], device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
         
         self.chunksRead = 0
     
     def getValidDeviceIndex(self):  # getvalidInputDeviceIndex?
         """ Gets first available device by default. TODO?"""
-        mics = self.valid_input_devices()
+        
+        mics = self.getValidInputDevices()
         return mics[0]
     
     def setCommonAudioInformations(self):
-        info = self.p.get_device_info_by_index(self.deviceIndex)
+        info = self.p.get_device_info_by_index(Idi.currentlyUsedDeviceIndex)
         Cai.frameRate = int(info["defaultSampleRate"])
         Logger.logCommonAudioInformations()
         # TODO: check whether is the way to get to know default sample width of the input microphone device
     
     ### SYSTEM TESTS
     
-    def valid_low_rate(self, device):
-        """set the rate to the lowest supported audio rate."""
-        for testrate in [44100]:
-            if self.valid_input_device(device, testrate):
-                return testrate
-        print("SOMETHING'S WRONG! I can't figure out how to use DEV", device)
-        return None
+    # def valid_low_rate(self, device):
+    #     """set the rate to the lowest supported audio rate."""
+    #     for testrate in [44100]:
+    #         if self.valid_input_device(device, testrate):
+    #             return testrate
+    #     print("SOMETHING'S WRONG! I can't figure out how to use DEV", device)
+    #     return None
     
     def valid_input_device(self, deviceIndex, rate=44100):
         """given a device ID and a rate, return TRUE/False if it's valid."""
@@ -79,7 +79,7 @@ class Ear:
             Logger.info("ValueError Exception Occured: I/O error({0}): {1}".format(e.errno, e.strerror))
             return False
     
-    def valid_input_devices(self):
+    def getValidInputDevices(self):
         """
         See which devices can be opened for microphone input.
         call this when no PyAudio object is loaded.
@@ -92,6 +92,9 @@ class Ear:
             print("no microphone devices found!")
         else:
             print("found %d microphone devices: %s" % (len(mics), mics))
+            
+        Idi.foundDevices.clear()
+        Idi.foundDevices.append(mics)
         return mics
     
     ### SETUP AND SHUTDOWN
@@ -140,7 +143,7 @@ class Ear:
         self.data = None  # will fill up with threaded recording data
         self.fft = None
         self.dataFiltered = None  # same
-        self.stream = self.p.open(format=Cai.sampleWidthPyAudio, input_device_index=self.deviceIndex,
+        self.stream = self.p.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
                                   channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
                                   frames_per_buffer=Cai.getChunk())
         

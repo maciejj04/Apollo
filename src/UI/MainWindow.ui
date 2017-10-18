@@ -86,12 +86,24 @@
      <string>Options</string>
     </property>
     <addaction name="actionChoose_file"/>
+    <addaction name="actionSettings"/>
+    <addaction name="actionChange_microphone"/>
    </widget>
    <addaction name="menuOptions"/>
   </widget>
   <action name="actionChoose_file">
    <property name="text">
     <string>Choose file ...</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionChange_microphone">
+   <property name="text">
+    <string>Change microphone</string>
    </property>
   </action>
  </widget>

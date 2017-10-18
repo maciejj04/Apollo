@@ -1,5 +1,5 @@
 class Audio:
-    filePath: str = None
+    filePath: str = './resources/tone.wav'
     data = None
     numberOfFrames: int = None
     numberOfChannels: int = None

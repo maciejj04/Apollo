@@ -5,26 +5,31 @@ from PyQt4 import QtGui, QtCore
 from src.Engine.Ear import Ear
 from src.UI import ui_main
 from src.UI import MainWindow
-
+from src.Commons.Audio import Audio
+from src.UI.drawOnce import drawOnce
+from src.tools.helper_functions import getAudioFile
+from src.UIApi.API import showChooseMicrophoneDialog
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
     def __init__(self, parent=None):
-        pyqtgraph.setConfigOption('background', 'w')  # before loading widget
+        pyqtgraph.setConfigOption('background', 'w')
         super(App, self).__init__(parent)
         self.setupUi(self)
         self.personalFFTChart.plotItem.showGrid(True, True, 0.7)
         self.maxFFT = 0
         self.maxPCM = 0
         self.startButton.clicked.connect(self.startButtonAction)
-        # self.listen.stateChanged.connect(self.update)
+        self.listen.stateChanged.connect(self.update)
+        self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
+        self.actionChange_microphone.triggered.connect(showChooseMicrophoneDialog)
         self.ear = Ear()
-        self.ear.stream_start()
+        self.ear.stream_start()  # TODO: Do I need this here?
         
         self.fileFFTChart.plotItem.showGrid(True, True, 0.7)
     
-    def update(self, state):
-        print(state)
-        if state != QtCore.Qt.Checked:
+    def update(self):
+        
+        if not self.listen.isChecked():
             return
         
         if self.ear.data is not None and self.ear.fft is not None:
@@ -44,6 +49,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
             self.personalFFTChart.plot(self.ear.fftx, self.ear.fft / self.maxFFT, pen=pen, clear=True)
         
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
+    
+    def generateChooseFileDialog(self):
+        Audio.filePath = QtGui.QFileDialog.getOpenFileName()
+        drawOnce(getAudioFile(), self.fileFFTChart)
 
     def startButtonAction(self):
         print('dupa')

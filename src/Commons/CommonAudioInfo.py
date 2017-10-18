@@ -10,7 +10,7 @@ class CommonAudioInfo:
     compType = None
     compName = None
     
-    updatesPerSecond = 10
+    updatesPerSecond = 10  # TODO: to be externalized as user settings.
     
     # chunk = lambda self: int(self.frameRate/self.updatesPerSecond)
     

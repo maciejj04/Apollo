@@ -68,7 +68,13 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
         self.actionChoose_file = QtGui.QAction(MainWindow)
         self.actionChoose_file.setObjectName(_fromUtf8("actionChoose_file"))
+        self.actionSettings = QtGui.QAction(MainWindow)
+        self.actionSettings.setObjectName(_fromUtf8("actionSettings"))
+        self.actionChange_microphone = QtGui.QAction(MainWindow)
+        self.actionChange_microphone.setObjectName(_fromUtf8("actionChange_microphone"))
         self.menuOptions.addAction(self.actionChoose_file)
+        self.menuOptions.addAction(self.actionSettings)
+        self.menuOptions.addAction(self.actionChange_microphone)
         self.menubar.addAction(self.menuOptions.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -81,5 +87,7 @@ class Ui_MainWindow(object):
         self.recordButton.setText(_translate("MainWindow", "Record", None))
         self.menuOptions.setTitle(_translate("MainWindow", "Options", None))
         self.actionChoose_file.setText(_translate("MainWindow", "Choose file ...", None))
+        self.actionSettings.setText(_translate("MainWindow", "Settings", None))
+        self.actionChange_microphone.setText(_translate("MainWindow", "Change microphone", None))
 
 from pyqtgraph import PlotWidget

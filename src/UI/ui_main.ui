@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
-    <height>650</height>
+    <width>772</width>
+    <height>631</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,13 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QCheckBox" name="listen">
+      <property name="text">
+       <string>listen</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="PlotWidget" name="filePCMChart"/>
     </item>
     <item>
@@ -35,7 +42,28 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>772</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionChoose_file"/>
+   </widget>
+   <addaction name="menuOptions"/>
+  </widget>
+  <action name="actionChoose_file">
+   <property name="text">
+    <string>Choose file ...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
