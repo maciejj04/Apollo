@@ -30,13 +30,13 @@ class Ear:
     
     def __init__(self):
         
-        self.p = pyaudio.PyAudio()
+        self.pyAudio = pyaudio.PyAudio()
         Idi.currentlyUsedDeviceIndex = self.getValidDeviceIndex()
         self.setCommonAudioInformations()
         self.datax = np.arange(Cai.getChunk()) / float(Cai.frameRate)
         
         Logger.info("Using: {name} (device {device}) at {hz} Hz"
-                    .format(name=self.info["name"], device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
+                    .format(name=Idi.name, device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
         
         self.chunksRead = 0
     
@@ -47,8 +47,9 @@ class Ear:
         return mics[0]
     
     def setCommonAudioInformations(self):
-        info = self.p.get_device_info_by_index(Idi.currentlyUsedDeviceIndex)
+        info = self.pyAudio.get_device_info_by_index(Idi.currentlyUsedDeviceIndex)
         Cai.frameRate = int(info["defaultSampleRate"])
+        Idi.name = Idi.foundDevices.get(Idi.currentlyUsedDeviceIndex)
         Logger.logCommonAudioInformations()
         # TODO: check whether is the way to get to know default sample width of the input microphone device
     
@@ -62,16 +63,16 @@ class Ear:
     #     print("SOMETHING'S WRONG! I can't figure out how to use DEV", device)
     #     return None
     
-    def valid_input_device(self, deviceIndex, rate=44100):
+    def validInputDevice(self, deviceIndex, rate=44100):
         """given a device ID and a rate, return TRUE/False if it's valid."""
         try:
-            self.info = self.p.get_device_info_by_index(deviceIndex)
-            if self.info["maxInputChannels"] == 0:
+            info = self.pyAudio.get_device_info_by_index(deviceIndex)
+            if info["maxInputChannels"] == 0:
                 return False
             
-            stream = self.p.open(format=pyaudio.paInt16, channels=1,
-                                 input_device_index=deviceIndex,  # , frames_per_buffer=self.chunk
-                                 rate=int(self.info["defaultSampleRate"]), input=True)
+            stream = self.pyAudio.open(format=pyaudio.paInt16, channels=1,
+                                       input_device_index=deviceIndex,  # , frames_per_buffer=self.chunk
+                                       rate=int(info["defaultSampleRate"]), input=True)
             
             stream.close()
             return True
@@ -85,8 +86,8 @@ class Ear:
         call this when no PyAudio object is loaded.
         """
         mics = []
-        for device in range(self.p.get_device_count()):
-            if self.valid_input_device(device):
+        for device in range(self.pyAudio.get_device_count()):
+            if self.validInputDevice(device):
                 mics.append(device)
         if len(mics) == 0:
             print("no microphone devices found!")
@@ -94,22 +95,29 @@ class Ear:
             print("found %d microphone devices: %s" % (len(mics), mics))
             
         Idi.foundDevices.clear()
-        Idi.foundDevices.append(mics)
+
+        for deviceIndex in mics:
+            info = self.pyAudio.get_device_info_by_index(deviceIndex)
+            device = {
+                deviceIndex: info['name']
+            }
+            Idi.foundDevices.update(device)
+        
         return mics
     
     ### SETUP AND SHUTDOWN
-    
-    def initiate(self):
-        """run this after changing settings (like rate) before recording"""
     
     def close(self):
         """gently detach from things."""
         print(" -- sending stream termination command...")
         self.keepRecording = False  # the threads should self-close
-        while (self.t.isAlive()):  # wait for all threads to close
+        while (self.threadObject.isAlive()):  # wait for all threads to close
             time.sleep(.1)
+            
         self.stream.stop_stream()
-        self.p.terminate()
+        self.stream.close()
+        self.pyAudio.terminate()
+        self.pyAudio = pyaudio.PyAudio()
     
     ### STREAM HANDLING
     
@@ -123,31 +131,30 @@ class Ear:
             print(" -- exception! terminating...")
             print(E, "\n" * 3)
             self.keepRecording = False
+            
         if self.keepRecording:
-            self.stream_thread_new()
+            self.newStreamThread()
         else:
-            self.stream.close()
-            self.p.terminate()
+           
             print(" -- stream STOPPED")
         self.chunksRead += 1
     
-    def stream_thread_new(self):
-        self.t = threading.Thread(target=self.stream_readchunk)
-        self.t.start()
+    def newStreamThread(self):
+        self.threadObject = threading.Thread(target=self.stream_readchunk)
+        self.threadObject.start()
     
     def stream_start(self):
         """adds data to self.data until termination signal"""
-        self.initiate()
-        print(" -- starting stream")
+
         self.keepRecording = True  # set this to False later to terminate stream
         self.data = None  # will fill up with threaded recording data
         self.fft = None
         self.dataFiltered = None  # same
-        self.stream = self.p.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
-                                  channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
-                                  frames_per_buffer=Cai.getChunk())
-        
-        self.stream_thread_new()
+        self.stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
+                                        channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
+                                        frames_per_buffer=Cai.getChunk())
+        Logger.info("Opening stream based on device: "+str(Idi.currentlyUsedDeviceIndex))
+        self.newStreamThread()
 
 # if __name__ == "__main__":
 #     ear = Ear(updatesPerSecond=10)  # optinoally set sample rate here

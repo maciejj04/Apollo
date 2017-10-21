@@ -8,7 +8,8 @@ from src.UI import MainWindow
 from src.Commons.Audio import Audio
 from src.UI.drawOnce import drawOnce
 from src.tools.helper_functions import getAudioFile
-from src.UIApi.API import showChooseMicrophoneDialog
+#from src.UIApi.API import showChooseMicrophoneDialog
+from src.UI.ChooseMicrophoneView import ChooseMicrophoneView
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -21,7 +22,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.startButton.clicked.connect(self.startButtonAction)
         self.listen.stateChanged.connect(self.update)
         self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
-        self.actionChange_microphone.triggered.connect(showChooseMicrophoneDialog)
+        self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
         self.ear = Ear()
         self.ear.stream_start()  # TODO: Do I need this here?
         
@@ -51,8 +52,16 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
     def generateChooseFileDialog(self):
-        Audio.filePath = QtGui.QFileDialog.getOpenFileName()
-        drawOnce(getAudioFile(), self.fileFFTChart)
+        filePath = QtGui.QFileDialog.getOpenFileName()
+        drawOnce(getAudioFile(filePath), self.fileFFTChart)
 
     def startButtonAction(self):
         print('dupa')
+
+    def showChooseMicrophoneDialog(self):
+        """
+        :param mics: list of available microphones
+        :return: choosen device nr.
+        """
+        ChooseMicrophoneView(parent=self)
+   

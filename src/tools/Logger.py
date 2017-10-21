@@ -18,7 +18,7 @@ class Logger:
     
     @staticmethod
     def logCommonAudioInformations():
-        infoString = """Common Audio data parameters were set at:
+        infoString = """[{dateTime}] Common Audio data parameters were set at:
                          - nrOfFramesPerBuffer(chunk): {}
                          - framerate: {}
                          - nchannels: {}
@@ -27,7 +27,7 @@ class Logger:
                          - compname {}
                          - updatesPerSecond {}"""\
             .format(Cai.getChunk(), Cai.frameRate, Cai.numberOfChannels, Cai.sampleWidthInBytes, Cai.compType,
-                    Cai.compName, Cai.updatesPerSecond)
+                    Cai.compName, Cai.updatesPerSecond,dateTime=str(datetime.now()))
         print(infoString)
         # TODO: save string to file.
     
@@ -40,7 +40,7 @@ class Logger:
             
         (filePath, nchannels, sampwidth, framerate, nframes, comptype, compname) = audio.getInformations()
     
-        print('''You choose : {}\t
+        print('''[{dateTime}] You choose : {}\t
                          - nrOfFrames: {}
                          - framerate: {}
                          - nchannels: {}
@@ -48,6 +48,6 @@ class Logger:
                          - comptype {}
                          - compname {}
                  - these are original audio file informations, audio data will be converted to input device audio format - to properly operate on this two files'''
-              .format(filePath, nframes, framerate, nchannels, sampwidth, comptype, compname))
+              .format(filePath, nframes, framerate, nchannels, sampwidth, comptype, compname, dateTime=str(datetime.now())))
         
         # TODO: save to log file

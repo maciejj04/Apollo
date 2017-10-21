@@ -5,3 +5,4 @@ TestScript.py
 *.wav
 dependencies/
 tmp/
+src/__pycache__/

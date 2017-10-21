@@ -49,8 +49,11 @@ def getInputArguments():
     return Audio.filePath if len(sys.argv) < 2 else sys.argv[1]
 
 
-def getAudioFile():
-    filePath = getInputArguments()
+def getAudioFile(filePath: str=None):
+    if filePath is None or filePath == "":
+        filePath = getInputArguments()
+
+    Audio.filePath = filePath
     validateFilePath(filePath)
     
     audio = readFile(filePath)
