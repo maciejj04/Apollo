@@ -23,6 +23,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.listen.stateChanged.connect(self.update)
         self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
         self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
+        self.recordButton.clicked.connect(self.recordButtonAction)
         self.ear = Ear()
         self.ear.stream_start()  # TODO: Do I need this here?
         
@@ -33,8 +34,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         if not self.listen.isChecked():
             return
         
-        if self.ear.data is not None and self.ear.fft is not None:
-            pcmMax = np.max(np.abs(self.ear.data))
+        if self.ear.chunkData is not None and self.ear.fft is not None:
+            pcmMax = np.max(np.abs(self.ear.chunkData))
             if pcmMax > self.maxPCM:
                 self.maxPCM = pcmMax
                 self.personalPCMChart.plotItem.setRange(yRange=[-pcmMax, pcmMax])
@@ -44,7 +45,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
                 self.personalFFTChart.plotItem.setRange(yRange=[0, 1])
             
             pen = pyqtgraph.mkPen(color='b')
-            self.personalPCMChart.plot(self.ear.datax, self.ear.data, pen=pen, clear=True)
+            self.personalPCMChart.plot(self.ear.datax, self.ear.chunkData, pen=pen, clear=True)
             
             pen = pyqtgraph.mkPen(color='r')
             self.personalFFTChart.plot(self.ear.fftx, self.ear.fft / self.maxFFT, pen=pen, clear=True)
@@ -65,3 +66,6 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         """
         ChooseMicrophoneView(parent=self)
    
+    def recordButtonAction(self):
+        # separate thread(?)
+        self.ear.startRecording()

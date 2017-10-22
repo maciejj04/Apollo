@@ -6,78 +6,68 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>980</width>
+    <height>749</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Apollo</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Apollo.png</normaloff>Apollo.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>509</y>
-      <width>781</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QCheckBox" name="listen">
-       <property name="text">
-        <string>listen</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="startButton">
-       <property name="text">
-        <string>Start</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="recordButton">
-       <property name="text">
-        <string>Record</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>9</y>
-      <width>781</width>
-      <height>491</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="PlotWidget" name="filePCMChart"/>
-     </item>
-     <item>
-      <widget class="PlotWidget" name="fileFFTChart"/>
-     </item>
-     <item>
-      <widget class="PlotWidget" name="personalFFTChart"/>
-     </item>
-     <item>
-      <widget class="PlotWidget" name="personalPCMChart"/>
-     </item>
-    </layout>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="PlotWidget" name="filePCMChart"/>
+      </item>
+      <item>
+       <widget class="PlotWidget" name="fileFFTChart"/>
+      </item>
+      <item>
+       <widget class="PlotWidget" name="personalFFTChart"/>
+      </item>
+      <item>
+       <widget class="PlotWidget" name="personalPCMChart"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QCheckBox" name="listen">
+        <property name="text">
+         <string>listen</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="startButton">
+        <property name="text">
+         <string>Start</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="recordButton">
+        <property name="text">
+         <string>Record</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>980</width>
      <height>26</height>
     </rect>
    </property>

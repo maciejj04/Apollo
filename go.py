@@ -7,6 +7,7 @@ from src.tools.helper_functions import getAudioFile
 
 
 if __name__ == "__main__":
+    
     app = QtGui.QApplication(sys.argv)
     ParentWindow = App()
     ParentWindow.show()

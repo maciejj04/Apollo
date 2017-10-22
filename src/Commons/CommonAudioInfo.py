@@ -1,11 +1,12 @@
 from pyaudio import paInt16
-
+import numpy as np
 
 class CommonAudioInfo:
-    numberOfFrames = None  # defines nr of frames which are going to be recorded(similar to length of input file)
+    numberOfFrames = None  # defines nr of frames which are going to be recorded(length of input file)
     numberOfChannels = 1
     sampleWidthInBytes = 2
     sampleWidthPyAudio = paInt16
+    sampleWidthNumpy = np.int16
     frameRate = None
     compType = None
     compName = None

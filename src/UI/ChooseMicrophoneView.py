@@ -1,4 +1,4 @@
-import sys
+import pyaudio
 from PyQt4 import QtGui
 from src.UI.Ui_ChooseMicrophone import Ui_ChooseMicrophone
 from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
@@ -24,5 +24,6 @@ class ChooseMicrophoneView(QtGui.QMainWindow, Ui_ChooseMicrophone):
         Idi.currentlyUsedDeviceIndex = index
         Logger.info("Changed microphone device to: " + str(index))
         self.parent.ear.close()
+        self.parent.ear.pyAudio = pyaudio.PyAudio()
         self.parent.ear.stream_start()
         self.close()

@@ -11,23 +11,20 @@ from src.tools.helper_functions import *
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.Logger import Logger
 from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
-
+from src.StreamHandlers.Stream import Stream
 
 class Ear:
     """
     The Ear class is provides access to continuously recorded
     (and mathematically processed) microphone data.
-    
-    Arguments:
-        
-        device - the number of the sound card input to use. Leave blank
-        to automatically detect one.
-        
-        updatesPerSecond - how fast to record new data. Note that smaller
-        numbers allow more data to be accessed and therefore high
-        frequencies to be analyzed if using a FFT later
     """
-    
+    chunkData = None  # will fill up with threaded recording data
+    fft = None
+    _record: bool = False
+    _recordData: np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
+    _recordedFrames: int = 0
+    stream: Stream = None
+
     def __init__(self):
         
         self.pyAudio = pyaudio.PyAudio()
@@ -54,14 +51,6 @@ class Ear:
         # TODO: check whether is the way to get to know default sample width of the input microphone device
     
     ### SYSTEM TESTS
-    
-    # def valid_low_rate(self, device):
-    #     """set the rate to the lowest supported audio rate."""
-    #     for testrate in [44100]:
-    #         if self.valid_input_device(device, testrate):
-    #             return testrate
-    #     print("SOMETHING'S WRONG! I can't figure out how to use DEV", device)
-    #     return None
     
     def validInputDevice(self, deviceIndex, rate=44100):
         """given a device ID and a rate, return TRUE/False if it's valid."""
@@ -105,59 +94,61 @@ class Ear:
         
         return mics
     
+    ### STREAM HANDLING
     ### SETUP AND SHUTDOWN
     
     def close(self):
         """gently detach from things."""
         print(" -- sending stream termination command...")
-        self.keepRecording = False  # the threads should self-close
-        while (self.threadObject.isAlive()):  # wait for all threads to close
-            time.sleep(.1)
-            
-        self.stream.stop_stream()
         self.stream.close()
         self.pyAudio.terminate()
-        self.pyAudio = pyaudio.PyAudio()
     
-    ### STREAM HANDLING
-    
-    def stream_readchunk(self):
-        """reads some audio and re-launches itself"""
-        try:
-            self.data = np.fromstring(self.stream.read(Cai.getChunk()), dtype=np.int16)
-            self.fftx, self.fft = getFFT(self.data, Cai.frameRate)
-        
-        except Exception as E:
-            print(" -- exception! terminating...")
-            print(E, "\n" * 3)
-            self.keepRecording = False
-            
-        if self.keepRecording:
-            self.newStreamThread()
-        else:
-           
-            print(" -- stream STOPPED")
-        self.chunksRead += 1
-    
-    def newStreamThread(self):
-        self.threadObject = threading.Thread(target=self.stream_readchunk)
-        self.threadObject.start()
     
     def stream_start(self):
         """adds data to self.data until termination signal"""
 
-        self.keepRecording = True  # set this to False later to terminate stream
-        self.data = None  # will fill up with threaded recording data
-        self.fft = None
-        self.dataFiltered = None  # same
-        self.stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
-                                        channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
-                                        frames_per_buffer=Cai.getChunk())
-        Logger.info("Opening stream based on device: "+str(Idi.currentlyUsedDeviceIndex))
-        self.newStreamThread()
+        self.stream = Stream(self.pyAudio).open()
+        self.stream.addObserver(self)
+        
+        self.stream.readChunk()
+
+    # RECORDING API
+    def startRecording(self):
+        Logger.info("Starting recording")
+        self._record = True
+
+    def stopRecording(self):
+        self._record = False
+        Logger.info("Stopping recording. Saved {nrOfRecFrames} frames".format(nrOfRecFrames=self._recordedFrames))
+        self._recordedFrames = 0
+        self.saveRecordedDataToFile()
+
+    def saveRecordedDataToFile(self, fileName='Recorded.wav'):
+        waveFile = wave.open(fileName, 'wb')
+        waveFile.setnchannels(Cai.numberOfChannels)
+        waveFile.setsampwidth(Cai.sampleWidthInBytes)
+        waveFile.setframerate(Cai.frameRate)
+        waveFile.writeframes(self._recordData.tostring())
+        Logger.info("Saving recorded data as: "+fileName)
+        waveFile.close()
+
+    # USED BY OBSERVABLE
+    def handleNewData(self, data):
+        self.chunkData = data
+        if self._record and self._recordedFrames < Cai.numberOfFrames:
+            self._recordData = np.append(self._recordData, self.chunkData)
+            #self._recordData.append(self.chunkData)
+            self._recordedFrames += Cai.getChunk()
+        elif self._recordedFrames == Cai.numberOfFrames:
+            self.stopRecording()
+            
+        # part where InterpretEngine should start work
+        # TODO: this should be caluculated in separate thread(?)
+        self.fftx, self.fft = getFFT(self.chunkData, Cai.frameRate)
+
 
 # if __name__ == "__main__":
-#     ear = Ear(updatesPerSecond=10)  # optinoally set sample rate here
+#     ear = Ear(updatesPerSecond=10)  # optionally set sample rate here
 #     ear.stream_start()  # goes forever
 #     lastRead = ear.chunksRead
 #     while True:
