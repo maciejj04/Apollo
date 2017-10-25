@@ -1,5 +1,5 @@
 class Audio:
-    filePath: str = './resources/tone.wav'
+    filePath: str = './resources/saxophone-weep.wav'
     data = None
     numberOfFrames: int = None
     numberOfChannels: int = None
@@ -21,7 +21,7 @@ class Audio:
 
     @classmethod
     def setFields(self,filePath, nchannels, sampwidth, framerate, nframes, comptype, compname):
-        """ Sets class variables(just as static fields) to goven values"""
+        """ Sets class variables(just as static fields) to gi ven values"""
         self.filePath = filePath
         self.numberOfChannels = nchannels
         self.sampleWidth = sampwidth

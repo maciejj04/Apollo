@@ -1,7 +1,7 @@
 import pyqtgraph
 
 from src.tools.helper_functions import *
-from src.Engine.InterpretEngine import InterpretEngine
+from src.Engine.ProcessingEngine import ProcessingEngine
 
 
 def drawOnce(wave, chart):
@@ -25,17 +25,17 @@ def drawOnce(wave, chart):
     print("chunk: %s" % chunk)
     arrayWithRawData = np.fromstring(rawData, dtype=np.int16)
 
-    engine = InterpretEngine(arrayWithRawData)
     # print("Highest freq for whole file is %s" % engine.findHighestFreq())
+    engine = ProcessingEngine(arrayWithRawData)
     (min, max) = engine.calculateMinMaxFrequencies()
-    
+
     i=0
     for startFrame in my_range(0, Cai.numberOfFrames-chunk, chunk):
-        highestFreq = InterpretEngine.findHighestFreq(arrayWithRawData[startFrame:startFrame+chunk])
+        highestFreq = ProcessingEngine.findHighestFreq(arrayWithRawData[startFrame:startFrame+chunk])
         # highestFreq = engine.findHighestFreq(startFrame=startFrame, endFrame=startFrame+chunk)
         print("{0}. Highest freq found in sample[{start},{end}] = {1}".format(i, highestFreq, start=startFrame, end=startFrame+chunk))
         freqs.append(highestFreq)
         i += 1
     
-    chart.setRange(yRange=[0, max])
+    chart.setRange(yRange=[0, 2000])
     chart.plot(y=freqs, pen=pen, clear=True)

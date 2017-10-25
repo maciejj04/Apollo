@@ -1,4 +1,21 @@
+import numpy as np
+
 class BaseProcessingUtils:
+
+    def __init__(self):
+        pass
+
+    def getFFT(self, data, rate):
+        """Given some data and rate, returns FFTfreq and FFT (half)."""
+        data = data * np.hamming(len(data))
+        fft = np.fft.fft(data)
+        fft = np.abs(fft)
+        # fft=10*np.log10(fft)
+        freq = np.fft.fftfreq(len(fft), 1.0 / rate)
+        # plt.plot(freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)])
+        # plt.show()
+        return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
+
 
     def getHighestFrequency(self, data):
         pass

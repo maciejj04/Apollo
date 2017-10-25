@@ -7,7 +7,7 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 class Converter:
     inAudio = Audio()
-    out = Cai()
+    out = Cai()  # why did I Instantiate Cai?
     
     def __init__(self):
         pass

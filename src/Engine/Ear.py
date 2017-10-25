@@ -12,18 +12,24 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.Logger import Logger
 from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
 from src.StreamHandlers.Stream import Stream
+from src.Engine.ProcessingEngine import ProcessingEngine
+from src.Observable import Observable
 
-class Ear:
+#Observer: Stream
+#Observable for: ProcessingEngine
+class Ear(Observable):
     """
     The Ear class is provides access to continuously recorded
     (and mathematically processed) microphone data.
     """
+    
     chunkData = None  # will fill up with threaded recording data
     fft = None
     _record: bool = False
     _recordData: np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
     _recordedFrames: int = 0
     stream: Stream = None
+    _processingEngine: ProcessingEngine = ProcessingEngine()
 
     def __init__(self):
         
@@ -31,7 +37,7 @@ class Ear:
         Idi.currentlyUsedDeviceIndex = self.getValidDeviceIndex()
         self.setCommonAudioInformations()
         self.datax = np.arange(Cai.getChunk()) / float(Cai.frameRate)
-        
+
         Logger.info("Using: {name} (device {device}) at {hz} Hz"
                     .format(name=Idi.name, device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
         
@@ -132,20 +138,25 @@ class Ear:
         Logger.info("Saving recorded data as: "+fileName)
         waveFile.close()
 
-    # USED BY OBSERVABLE
+    # For Observer pattern__________________________________________________________________________
+    def notifyObservers(self, chunkData):
+        for o in self._observers:
+            o.handleNewData(chunkData)
+
+
+    # USED BY OBSERVABLE(Stream)
     def handleNewData(self, data):
-        self.chunkData = data
+        chunkData = data
         if self._record and self._recordedFrames < Cai.numberOfFrames:
-            self._recordData = np.append(self._recordData, self.chunkData)
-            #self._recordData.append(self.chunkData)
+            self._recordData = np.append(self._recordData, chunkData)
+            #self._recordData.append(chunkData)
             self._recordedFrames += Cai.getChunk()
         elif self._recordedFrames == Cai.numberOfFrames:
             self.stopRecording()
-            
-        # part where InterpretEngine should start work
-        # TODO: this should be caluculated in separate thread(?)
-        self.fftx, self.fft = getFFT(self.chunkData, Cai.frameRate)
 
+        # TODO: this should be caluculated in separate thread(?)
+        self.notifyObservers(chunkData)
+        
 
 # if __name__ == "__main__":
 #     ear = Ear(updatesPerSecond=10)  # optionally set sample rate here

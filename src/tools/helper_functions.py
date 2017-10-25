@@ -15,17 +15,6 @@ def my_range(start, end, step):
         start += step
 
 
-def getFFT(data, rate):
-    """Given some data and rate, returns FFTfreq and FFT (half)."""
-    data = data * np.hamming(len(data))
-    fft = np.fft.fft(data)
-    fft = np.abs(fft)
-    # fft=10*np.log10(fft)
-    freq = np.fft.fftfreq(len(fft), 1.0 / rate)
-    # plt.plot(freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)])
-    # plt.show()
-    return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
-
 
 def generateSampleWaveFile(filePath, fileName, freq=440.0, frameRate=44100, sampleWidth=2, nframes=40000):
     # http://stackoverflow.com/questions/3637350/how-to-write-stereo-wav-files-in-python

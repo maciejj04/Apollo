@@ -3,20 +3,28 @@ import pyqtgraph
 from PyQt4 import QtGui, QtCore
 
 from src.Engine.Ear import Ear
-from src.UI import ui_main
 from src.UI import MainWindow
-from src.Commons.Audio import Audio
 from src.UI.drawOnce import drawOnce
 from src.tools.helper_functions import getAudioFile
-#from src.UIApi.API import showChooseMicrophoneDialog
 from src.UI.ChooseMicrophoneView import ChooseMicrophoneView
+from src.Engine.ProcessingEngine import ProcessingEngine
+
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
     def __init__(self, parent=None):
         pyqtgraph.setConfigOption('background', 'w')
         super(App, self).__init__(parent)
+        #pyqtgraph.setConfigOption(useOpenGL=True)
         self.setupUi(self)
+        self.resize(1300, 900)
         self.personalFFTChart.plotItem.showGrid(True, True, 0.7)
+
+# TODO: to be deleted. Just for evaluation.
+        x = np.arange(1000)
+        y = np.random.normal(size=(3, 1000))
+        for i in range(3):
+            self.filePCMChart.plot(x, y[i], pen=(i, 3))
+        
         self.maxFFT = 0
         self.maxPCM = 0
         self.startButton.clicked.connect(self.startButtonAction)
@@ -25,6 +33,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
         self.recordButton.clicked.connect(self.recordButtonAction)
         self.ear = Ear()
+        self.processingEngine = ProcessingEngine()
+        self.ear.addObserver(self.processingEngine)
         self.ear.stream_start()  # TODO: Do I need this here?
         
         self.fileFFTChart.plotItem.showGrid(True, True, 0.7)
@@ -48,7 +58,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
             self.personalPCMChart.plot(self.ear.datax, self.ear.chunkData, pen=pen, clear=True)
             
             pen = pyqtgraph.mkPen(color='r')
-            self.personalFFTChart.plot(self.ear.fftx, self.ear.fft / self.maxFFT, pen=pen, clear=True)
+            self.personalFFTChart.plot(self.processingEngine.fftx, self.processingEngine.fft / self.maxFFT, pen=pen, clear=True)
         
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
@@ -57,7 +67,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         drawOnce(getAudioFile(filePath), self.fileFFTChart)
 
     def startButtonAction(self):
-        print('dupa')
+        print('Action')
 
     def showChooseMicrophoneDialog(self):
         """

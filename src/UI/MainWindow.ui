@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>980</width>
-    <height>749</height>
+    <width>1300</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,10 +22,10 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="PlotWidget" name="filePCMChart"/>
+       <widget class="PlotWidget" name="pcmsChart"/>
       </item>
       <item>
-       <widget class="PlotWidget" name="fileFFTChart"/>
+       <widget class="PlotWidget" name="fftsChart"/>
       </item>
       <item>
        <widget class="PlotWidget" name="personalFFTChart"/>
@@ -67,7 +67,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>980</width>
+     <width>1300</width>
      <height>26</height>
     </rect>
    </property>
