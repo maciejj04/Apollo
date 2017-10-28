@@ -1,7 +1,10 @@
 from .BaseProcessingUtils import BaseProcessingUtils
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
+from src.tools.helper_functions import my_range
 from typing import Tuple
+from src.Observer import Observer
 import numpy as np
+from src.Engine.Chunk import Chunk
 
 # def checkParametersBeforeCall(func):
 #     def funcWrapper():
@@ -21,7 +24,7 @@ import numpy as np
 #         return funcWrapper
 #     return tagDecorator
 
-class ProcessingEngine(BaseProcessingUtils):
+class ProcessingEngine(BaseProcessingUtils, Observer):
     """
         class can work in state-full or state-less mode(?)
         Real Time analysis possibilites:
@@ -29,32 +32,29 @@ class ProcessingEngine(BaseProcessingUtils):
             - min/max freq of a sample
 
     """
-    datax = None
+    datax = None# TODO: not used yet. For now datax is in Ear
     
     fullAudioData: np.ndarray = None
     fullAudioFFT: np.ndarray = None
     fullAudioFreqs: np.ndarray = None
-    
+    frequencyEnvelope: list
+
     minFrequency: int = None
     maxFrequency: int = None
     
-    chunksMinFreq: list = []
-    chunksMaxFreq: list = []
+    chunks: list = []
     
-    chunksFFT: np.ndarray = None
-    chunksFreqs: np.ndarray = None
-    
-    currentChunkData: np.ndarray = None
+    currentChunkNr: int = -1
     
     def __init__(self, data: np.ndarray = None):
         super().__init__()
         """
         :param data: data in np.array return format form
         """
-
+        
         if data is None:
             return
-
+        
         self.fullAudioData = data
         self.fullAudioFreqs, self.fullAudioFFT = self.getFFT(data, Cai.frameRate)
     
@@ -67,6 +67,23 @@ class ProcessingEngine(BaseProcessingUtils):
     def withData(self, data):
         self.data = data
         return self
+    
+    def calculateFrequencyEnvelope(self, rawDataArray=None):
+        if rawDataArray is None:
+            rawDataArray = self.fullAudioData
+        chunk = Cai.getChunkSize()
+        freqs = []
+        i = 0
+        for startFrame in my_range(0, Cai.numberOfFrames - chunk, chunk):
+            highestFreq = ProcessingEngine.findHighestFreq(rawDataArray[startFrame:startFrame + chunk])
+            # highestFreq = engine.findHighestFreq(startFrame=startFrame, endFrame=startFrame+chunk)
+            print("{0}. Highest freq found in sample[{start},{end}] = {1}".format(i, highestFreq, start=startFrame,
+                                                                                  end=startFrame + chunk))
+            freqs.append(highestFreq)
+            i += 1
+        
+        self.frequencyEnvelope = freqs
+        return freqs
     
     def findHighestFreq(self, startFrame: int = 0, endFrame: int = Cai.numberOfFrames) -> int:
         """
@@ -108,7 +125,10 @@ class ProcessingEngine(BaseProcessingUtils):
     
     def calculateEnvelope(self):  # obwiednia
         # caluculates envelope based on full Audio PCM signal.
+        #TODO: !!!!!
         pass
+    
+
     
     # TODO: ......................
     # def maxFrequency(X, F_sample, Low_cutoff=80, High_cutoff=300):
@@ -132,16 +152,19 @@ class ProcessingEngine(BaseProcessingUtils):
     #         Spectrum == np.max(Spectrum[Low_point: High_point]))  # Calculating which frequency has max power.
     #
     #     return maximumFrequency
-    def setCommonFileMinMaxFrequencies(self, freqs: Tuple[int, int]):
-        """
-        :param freqs: (min, max)
-        :return: void
-        """
-        self.minFrequency = freqs[0]
-        self.maxFrequency = freqs[1]
 
+    def getCurrentChunk(self):
+        return self.chunks[-1]
     
-    # Used by observer pattern!
+    def getCurrentChunkFreq(self):
+        return self.chunks[-1].chunkFreqs
 
+    def getCurrentChunkFFT(self):
+        return self.chunks[-1].chunkFFT
+
+    # Used by observer pattern!
+    
     def handleNewData(self, data):
-        self.fftx, self.fft = self.getFFT(data, Cai.frameRate)
+        self.currentChunkNr += 1
+        chunk = Chunk(data, self.currentChunkNr)
+        self.chunks.append(chunk)

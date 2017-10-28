@@ -5,9 +5,10 @@ class BaseProcessingUtils:
     def __init__(self):
         pass
 
-    def getFFT(self, data, rate):
+    @staticmethod
+    def getFFT(data, rate):
         """Given some data and rate, returns FFTfreq and FFT (half)."""
-        data = data * np.hamming(len(data))
+        data = data * np.hamming(len(data))#TODO: should give a choice to user?
         fft = np.fft.fft(data)
         fft = np.abs(fft)
         # fft=10*np.log10(fft)

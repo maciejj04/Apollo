@@ -4,11 +4,9 @@ from PyQt4 import QtGui, QtCore
 
 from src.Engine.Ear import Ear
 from src.UI import MainWindow
-from src.UI.drawOnce import drawOnce
-from src.tools.helper_functions import getAudioFile
 from src.UI.ChooseMicrophoneView import ChooseMicrophoneView
 from src.Engine.ProcessingEngine import ProcessingEngine
-
+from src.Commons.Audio import Audio
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -35,6 +33,17 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         self.ear = Ear()
         self.processingEngine = ProcessingEngine()
         self.ear.addObserver(self.processingEngine)
+        #TODO: move drawOce invocation underneath! Requires getting raw audio data!
+        self.liveProcessingEngine = ProcessingEngine(Audio().loadFromPathAndAdjust().getRawDataFromWav())
+        
+        self._drawOnce(
+            chart=self.fileFFTChart,
+            yData=self.liveProcessingEngine.calculateFrequencyEnvelope(),
+            #  (min, max) = self.liveProcessingEngine.calculateMinMaxFrequencies()
+            yRange=[0, 2000]
+        )
+        
+        
         self.ear.stream_start()  # TODO: Do I need this here?
         
         self.fileFFTChart.plotItem.showGrid(True, True, 0.7)
@@ -44,27 +53,35 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         if not self.listen.isChecked():
             return
         
-        if self.ear.chunkData is not None and self.ear.fft is not None:
-            pcmMax = np.max(np.abs(self.ear.chunkData))
+        chunksFFT = self.processingEngine.getCurrentChunkFFT()
+        chunksData = self.processingEngine.getCurrentChunk().rawData
+        
+        if chunksData is not None and chunksFFT is not None:
+            pcmMax = np.max(np.abs(chunksData))
             if pcmMax > self.maxPCM:
                 self.maxPCM = pcmMax
                 self.personalPCMChart.plotItem.setRange(yRange=[-pcmMax, pcmMax])
-            if np.max(self.ear.fft) > self.maxFFT:
-                self.maxFFT = np.max(np.abs(self.ear.fft))
+            if np.max(chunksFFT) > self.maxFFT:
+                self.maxFFT = np.max(np.abs(chunksFFT))
                 # self.grFFT.plotItem.setRange(yRange=[0,self.maxFFT])
                 self.personalFFTChart.plotItem.setRange(yRange=[0, 1])
             
             pen = pyqtgraph.mkPen(color='b')
-            self.personalPCMChart.plot(self.ear.datax, self.ear.chunkData, pen=pen, clear=True)
+            self.personalPCMChart.plot(self.ear.datax, chunksData, pen=pen, clear=True)
             
             pen = pyqtgraph.mkPen(color='r')
-            self.personalFFTChart.plot(self.processingEngine.fftx, self.processingEngine.fft / self.maxFFT, pen=pen, clear=True)
+            self.personalFFTChart.plot(self.processingEngine.getCurrentChunkFreq(), chunksFFT/self.maxFFT, pen=pen, clear=True)
         
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
     def generateChooseFileDialog(self):
         filePath = QtGui.QFileDialog.getOpenFileName()
-        drawOnce(getAudioFile(filePath), self.fileFFTChart)
+        self._drawOnce(
+            chart=self.fileFFTChart,
+            yData=self.liveProcessingEngine.calculateFrequencyEnvelope(),
+            #  (min, max) = self.liveProcessingEngine.calculateMinMaxFrequencies()
+            yRange=[0, 2000]
+        )
 
     def startButtonAction(self):
         print('Action')
@@ -79,3 +96,23 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
     def recordButtonAction(self):
         # separate thread(?)
         self.ear.startRecording()
+
+
+
+    def _drawOnce(self, chart, yData, yRange=[0, 2000]):
+        """
+        :param chart: pyqtgraph object to draw on
+        :return: void
+        """
+        # color = pyqtgraph.hsvColor(time.time() / 5 % 1, alpha=.5)
+        pen = pyqtgraph.mkPen(color='r', width=2)
+    
+        # TODO: find coorelation between np.int16 and PyAudio data types. Do We need PyAudio?
+    
+    
+        
+        chart.setRange(yRange=yRange)
+        chart.plot(y=yData, pen=pen, clear=True)
+
+    def _getLastNSeconds(self, data):
+        return

@@ -20,7 +20,7 @@ class Stream:
     def open(self):
         self._stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
                                          channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
-                                         frames_per_buffer=Cai.getChunk())
+                                         frames_per_buffer=Cai.getChunkSize())
         
         Logger.info("Opening stream based on device: "+str(Idi.currentlyUsedDeviceIndex))
         return self
@@ -36,7 +36,7 @@ class Stream:
     def readChunk(self):
         """reads some audio and re-launches itself"""
         try:
-            self.data = np.fromstring(self._stream.read(Cai.getChunk()), dtype=np.int16)
+            self.data = np.fromstring(self._stream.read(Cai.getChunkSize()), dtype=np.int16)
             self.notifyObservers()
         
         except Exception as E:

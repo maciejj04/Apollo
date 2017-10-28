@@ -6,18 +6,18 @@ It's designed to hold only a single audio sample in memory.
 import pyaudio
 import time
 import numpy as np
-import threading
 from src.tools.helper_functions import *
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.Logger import Logger
 from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
 from src.StreamHandlers.Stream import Stream
 from src.Engine.ProcessingEngine import ProcessingEngine
-from src.Observable import Observable
+from src.Observable import Observable, Observer
 
-#Observer: Stream
-#Observable for: ProcessingEngine
-class Ear(Observable):
+
+# Observer: Stream
+# Observable for: ProcessingEngine
+class Ear(Observable, Observer):
     """
     The Ear class is provides access to continuously recorded
     (and mathematically processed) microphone data.
@@ -30,14 +30,14 @@ class Ear(Observable):
     _recordedFrames: int = 0
     stream: Stream = None
     _processingEngine: ProcessingEngine = ProcessingEngine()
-
+    
     def __init__(self):
         
         self.pyAudio = pyaudio.PyAudio()
         Idi.currentlyUsedDeviceIndex = self.getValidDeviceIndex()
         self.setCommonAudioInformations()
-        self.datax = np.arange(Cai.getChunk()) / float(Cai.frameRate)
-
+        self.datax = np.arange(Cai.getChunkSize()) / float(Cai.frameRate)
+        
         Logger.info("Using: {name} (device {device}) at {hz} Hz"
                     .format(name=Idi.name, device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
         
@@ -88,9 +88,9 @@ class Ear(Observable):
             print("no microphone devices found!")
         else:
             print("found %d microphone devices: %s" % (len(mics), mics))
-            
+        
         Idi.foundDevices.clear()
-
+        
         for deviceIndex in mics:
             info = self.pyAudio.get_device_info_by_index(deviceIndex)
             device = {
@@ -109,54 +109,53 @@ class Ear(Observable):
         self.stream.close()
         self.pyAudio.terminate()
     
-    
     def stream_start(self):
         """adds data to self.data until termination signal"""
-
+        
         self.stream = Stream(self.pyAudio).open()
         self.stream.addObserver(self)
         
         self.stream.readChunk()
-
+    
     # RECORDING API
     def startRecording(self):
         Logger.info("Starting recording")
         self._record = True
-
+    
     def stopRecording(self):
         self._record = False
-        Logger.info("Stopping recording. Saved {nrOfRecFrames} frames".format(nrOfRecFrames=self._recordedFrames))
+        Logger.info("Stopping recording. Saved {nrOfRecFrames}->{real} frames".format(nrOfRecFrames=self._recordedFrames, real=Cai.numberOfFrames))
         self._recordedFrames = 0
         self.saveRecordedDataToFile()
-
+    
     def saveRecordedDataToFile(self, fileName='Recorded.wav'):
         waveFile = wave.open(fileName, 'wb')
         waveFile.setnchannels(Cai.numberOfChannels)
         waveFile.setsampwidth(Cai.sampleWidthInBytes)
         waveFile.setframerate(Cai.frameRate)
         waveFile.writeframes(self._recordData.tostring())
-        Logger.info("Saving recorded data as: "+fileName)
+        Logger.info("Saving recorded data as: " + fileName)
         waveFile.close()
-
+    
     # For Observer pattern__________________________________________________________________________
     def notifyObservers(self, chunkData):
         for o in self._observers:
             o.handleNewData(chunkData)
-
-
+    
     # USED BY OBSERVABLE(Stream)
     def handleNewData(self, data):
-        chunkData = data
+        self.chunkData = data
         if self._record and self._recordedFrames < Cai.numberOfFrames:
-            self._recordData = np.append(self._recordData, chunkData)
-            #self._recordData.append(chunkData)
-            self._recordedFrames += Cai.getChunk()
-        elif self._recordedFrames == Cai.numberOfFrames:
+            self._recordData = np.append(self._recordData, self.chunkData)
+            # self._recordData.append(chunkData)
+            self._recordedFrames += Cai.getChunkSize()
+            print("_recordedFrames={}, nrOfframes = {}".format(self._recordedFrames, Cai.numberOfFrames))
+        elif self._recordedFrames >= Cai.numberOfFrames:
+            self._recordData = self._recordData[:Cai.numberOfFrames]
             self.stopRecording()
-
+            
         # TODO: this should be caluculated in separate thread(?)
-        self.notifyObservers(chunkData)
-        
+        self.notifyObservers(self.chunkData)
 
 # if __name__ == "__main__":
 #     ear = Ear(updatesPerSecond=10)  # optionally set sample rate here

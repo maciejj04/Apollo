@@ -16,7 +16,7 @@ class CommonAudioInfo:
     # chunk = lambda self: int(self.frameRate/self.updatesPerSecond)
     
     @classmethod
-    def getChunk(self):
+    def getChunkSize(self):
         return int(self.frameRate / self.updatesPerSecond)
     
     @classmethod
