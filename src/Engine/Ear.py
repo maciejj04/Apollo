@@ -29,10 +29,11 @@ class Ear(Observable, Observer):
     _recordData: np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
     _recordedFrames: int = 0
     stream: Stream = None
-    _processingEngine: ProcessingEngine = ProcessingEngine()
+    #_processingEngine: ProcessingEngine = ProcessingEngine()
     
     def __init__(self):
-        
+        Observable.__init__(self)
+        Observer.__init__(self)
         self.pyAudio = pyaudio.PyAudio()
         Idi.currentlyUsedDeviceIndex = self.getValidDeviceIndex()
         self.setCommonAudioInformations()
@@ -47,7 +48,7 @@ class Ear(Observable, Observer):
         """ Gets first available device by default. TODO?"""
         
         mics = self.getValidInputDevices()
-        return mics[0]
+        return mics[1]
     
     def setCommonAudioInformations(self):
         info = self.pyAudio.get_device_info_by_index(Idi.currentlyUsedDeviceIndex)
@@ -105,13 +106,13 @@ class Ear(Observable, Observer):
     
     def close(self):
         """gently detach from things."""
-        print(" -- sending stream termination command...")
+        Logger.info(" -- sending stream termination command...")
         self.stream.close()
         self.pyAudio.terminate()
     
     def stream_start(self):
         """adds data to self.data until termination signal"""
-        
+        self.setCommonAudioInformations()
         self.stream = Stream(self.pyAudio).open()
         self.stream.addObserver(self)
         
@@ -136,11 +137,12 @@ class Ear(Observable, Observer):
         waveFile.writeframes(self._recordData.tostring())
         Logger.info("Saving recorded data as: " + fileName)
         waveFile.close()
+        self._recordData = np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
     
     # For Observer pattern__________________________________________________________________________
     def notifyObservers(self, chunkData):
         for o in self._observers:
-            o.handleNewData(chunkData)
+            o.handleNewData(chunkData, shouldSave=self._record)
     
     # USED BY OBSERVABLE(Stream)
     def handleNewData(self, data):

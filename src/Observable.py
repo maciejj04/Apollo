@@ -4,7 +4,9 @@ from .Observer import Observer
 
 
 class Observable(abc.ABC):
-    _observers: list = []
+
+    def __init__(self):
+        self._observers: list = []
     
     @property
     def getObservers(self) -> [Observer]:

@@ -4,17 +4,18 @@ from src.tools.Logger import Logger
 import threading
 import time
 import numpy as np
+from src.Observable import Observable
 
-class Stream:
+class Stream(Observable):
     
     _stream = None
     keepListening: bool = True
     parent = None
     chunksRead: int = 0
     data = None
-    observers: list = []
     
     def __init__(self, pyAudioObj):# TODO: probably i should pass only pyAudio
+        Observable.__init__(self)
         self.pyAudio = pyAudioObj
     
     def open(self):
@@ -41,7 +42,7 @@ class Stream:
         
         except Exception as E:
             print(" -- exception! terminating...")
-            print(E, "\n" * 3)
+            print(E, "\n" * 3)# TODO: raise?
             self.keepListening = False
     
         if self.keepListening:
@@ -53,10 +54,8 @@ class Stream:
     def _newStreamThread(self):
         self.threadObject = threading.Thread(target=self.readChunk)
         self.threadObject.start()
-    
-    def addObserver(self, obj):
-        self.observers.append(obj)
+
         
     def notifyObservers(self):
-        for o in self.observers:
+        for o in self._observers:
             o.handleNewData(self.data)

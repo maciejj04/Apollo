@@ -53,8 +53,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
         if not self.listen.isChecked():
             return
         
-        chunksFFT = self.processingEngine.getCurrentChunkFFT()
-        chunksData = self.processingEngine.getCurrentChunk().rawData
+        chunksFFT = self.processingEngine.getCurrentRTChunkFFT()
+        chunksData = self.processingEngine.getCurrentRTChunk().rawData
         
         if chunksData is not None and chunksFFT is not None:
             pcmMax = np.max(np.abs(chunksData))
@@ -70,12 +70,13 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):
             self.personalPCMChart.plot(self.ear.datax, chunksData, pen=pen, clear=True)
             
             pen = pyqtgraph.mkPen(color='r')
-            self.personalFFTChart.plot(self.processingEngine.getCurrentChunkFreq(), chunksFFT/self.maxFFT, pen=pen, clear=True)
+            self.personalFFTChart.plot(self.processingEngine.getCurrentRTChunkFreq(), chunksFFT/self.maxFFT, pen=pen, clear=True)
         
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
     def generateChooseFileDialog(self):
         filePath = QtGui.QFileDialog.getOpenFileName()
+        #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!
         self._drawOnce(
             chart=self.fileFFTChart,
             yData=self.liveProcessingEngine.calculateFrequencyEnvelope(),

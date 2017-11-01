@@ -42,12 +42,16 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
     minFrequency: int = None
     maxFrequency: int = None
     
-    chunks: list = []
+    recordChunks: list = []
+    realTimeChunks: list = []
     
     currentChunkNr: int = -1
+    recording = False
+    
+    
     
     def __init__(self, data: np.ndarray = None):
-        super().__init__()
+        Observer.__init__(self)
         """
         :param data: data in np.array return format form
         """
@@ -154,17 +158,30 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
     #     return maximumFrequency
 
     def getCurrentChunk(self):
-        return self.chunks[-1]
+        return self.recordChunks[-1]
     
     def getCurrentChunkFreq(self):
-        return self.chunks[-1].chunkFreqs
+        return self.recordChunks[-1].chunkFreqs
 
     def getCurrentChunkFFT(self):
-        return self.chunks[-1].chunkFFT
+        return self.recordChunks[-1].chunkFFT
+
+    def getCurrentRTChunk(self):
+        return self.realTimeChunks[-1]
+
+    def getCurrentRTChunkFreq(self):
+        return self.realTimeChunks[-1].chunkFreqs
+
+    def getCurrentRTChunkFFT(self):
+        return self.realTimeChunks[-1].chunkFFT
+
 
     # Used by observer pattern!
     
-    def handleNewData(self, data):
+    def handleNewData(self, data, shouldSave=False):
         self.currentChunkNr += 1
         chunk = Chunk(data, self.currentChunkNr)
-        self.chunks.append(chunk)
+        self.realTimeChunks.append(chunk)
+        if shouldSave:
+            self.recordChunks.append(chunk)
+            print("saved new chunk %d" % len(self.recordChunks))
