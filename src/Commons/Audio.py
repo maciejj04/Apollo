@@ -36,8 +36,10 @@ class Audio:
         self._logAudioInfo()
         return self
     
-    def getRawDataFromWav(self):
-        frames = self.wav.readframes(self.wav.getnframes())
+    def getRawDataFromWav(self, wav=None):
+        if wav is None:
+            wav = self.wav.getnframes()
+        frames = self.wav.readframes(wav)
         self.wav.close()
         return np.fromstring(frames, dtype=np.int16)
     

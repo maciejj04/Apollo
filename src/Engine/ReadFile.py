@@ -7,10 +7,10 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 AudioSegment.converter = r"C:\tools\ffmpeg-3.3.3-win64-static\ffmpeg-3.3.3-win64-static\bin\ffmpeg.exe"
 
 
-def getRawAudioFramesFromFile(filePath,):
-
-    Converter.adjustAudioFormat(wav)
-    
-    return np.fromstring(Converter.getRawDataFromConvertedFile(), dtype=np.int16)
-    # TODO: Check in Ear how to wav file should be read
-    # TODO: save with appropriate bitdepth sampling etc.
+# def getRawAudioFramesFromFile(filePath,):
+#
+#     Converter.adjustAudioFormat(wav)
+#
+#     return np.fromstring(Converter.getRawDataFromConvertedFile(), dtype=np.int16)
+#     # TODO: Check in Ear how to wav file should be read
+#     # TODO: save with appropriate bitdepth sampling etc.

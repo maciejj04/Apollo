@@ -5,6 +5,9 @@ from typing import Tuple
 from src.Observer import Observer
 import numpy as np
 from src.Engine.Chunk import Chunk
+from collections import deque
+from src.MessageClient import MessageClient
+from src.MessageServer import MessageServer, MsgTypes
 
 # def checkParametersBeforeCall(func):
 #     def funcWrapper():
@@ -24,7 +27,7 @@ from src.Engine.Chunk import Chunk
 #         return funcWrapper
 #     return tagDecorator
 
-class ProcessingEngine(BaseProcessingUtils, Observer):
+class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     """
         class can work in state-full or state-less mode(?)
         Real Time analysis possibilites:
@@ -32,45 +35,52 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
             - min/max freq of a sample
 
     """
-    datax = None# TODO: not used yet. For now datax is in Ear
+
+
+    datax = None  # TODO: not used yet. For now datax is in Ear
     
     fullAudioData: np.ndarray = None
     fullAudioFFT: np.ndarray = None
     fullAudioFreqs: np.ndarray = None
-    frequencyEnvelope: list
-
+    frequencyEnvelope: list = None
+    PCMEnvelope: np.ndarray = None
+    
     minFrequency: int = None
     maxFrequency: int = None
     
     recordChunks: list = []
-    realTimeChunks: list = []
+    realTimeChunks: deque = None#deque(maxlen=Cai.numberOfFrames)
+    realTimeFrequencyEnvelope: deque = None#deque(maxlen=Cai.numberOfFrames)
+    realTimePCMEnvelope: deque = None#deque(maxlen=Cai.numberOfFrames)
     
     currentChunkNr: int = -1
     recording = False
     
-    
-    
     def __init__(self, data: np.ndarray = None):
-        Observer.__init__(self)
         """
         :param data: data in np.array return format form
         """
-        
+        Observer.__init__(self)
+        MessageServer.register(self)
+
+        self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
+        self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
+        self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
+
+
         if data is None:
+            self.fullAudioData = np.ones(0, dtype=Cai.sampleWidthNumpy)
             return
         
         self.fullAudioData = data
         self.fullAudioFreqs, self.fullAudioFFT = self.getFFT(data, Cai.frameRate)
     
-    # def calculateFFTAndFreqs(self, data=None):
-    #     if data is None:
-    #         data = self.fullAudioData
-    #     self.fft = np.fft.fft(data)
-    #     self.freqs = np.fft.fftfreq(len(self.fft))
-    
     def withData(self, data):
         self.data = data
         return self
+    
+    def getFrequencyEnvelope(self):
+        return self.calculateFrequencyEnvelope() if self.frequencyEnvelope is None else self.frequencyEnvelope
     
     def calculateFrequencyEnvelope(self, rawDataArray=None):
         if rawDataArray is None:
@@ -79,9 +89,9 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
         freqs = []
         i = 0
         for startFrame in my_range(0, Cai.numberOfFrames - chunk, chunk):
-            highestFreq = ProcessingEngine.findHighestFreq(rawDataArray[startFrame:startFrame + chunk])
+            highestFreq = ProcessingEngine.findHighestFreqFromRawData(rawDataArray[startFrame:startFrame + chunk])
             # highestFreq = engine.findHighestFreq(startFrame=startFrame, endFrame=startFrame+chunk)
-            print("{0}. Highest freq found in sample[{start},{end}] = {1}".format(i, highestFreq, start=startFrame,
+            print("{0}. Highest freq found in sample[{start}:{end}] = {1}".format(i, highestFreq, start=startFrame,
                                                                                   end=startFrame + chunk))
             freqs.append(highestFreq)
             i += 1
@@ -114,25 +124,28 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
         return abs(freqs.min() * Cai.frameRate), abs(freqs.max() * Cai.frameRate)
     
     @staticmethod
-    def findHighestFreq(data: np.ndarray) -> int:
+    def findHighestFreqFromRawData(data: np.ndarray) -> int:
         """
         :return: highestFrequency in hertz
         """
+        freq, fft = BaseProcessingUtils.getFFT(data, Cai.frameRate)
+        return ProcessingEngine.findHighestFreqFromFFT(fft, freq)
+    
+    @staticmethod
+    def findHighestFreqFromFFT(fftData: np.ndarray, freqs=None) -> int:
+        if freqs is None:
+            freqs = np.fft.fftfreq(len(fftData))
         
-        fft = np.fft.fft(data)
-        freqs = np.fft.fftfreq(len(fft))
-        
-        idx = np.argmax(np.abs(fft))
+        idx = np.argmax(np.abs(fftData))
         freq = freqs[idx]
-        freq_in_hertz = abs(freq * Cai.frameRate)
+        freq_in_hertz = abs(freq)  # * Cai.frameRate)
         return freq_in_hertz
     
-    def calculateEnvelope(self):  # obwiednia
-        # caluculates envelope based on full Audio PCM signal.
-        #TODO: !!!!!
+    def calculatePCMEnvelope(self, data=None):  # obwiednia
+        if data is None:
+            data = self.fullAudioData
+        
         pass
-    
-
     
     # TODO: ......................
     # def maxFrequency(X, F_sample, Low_cutoff=80, High_cutoff=300):
@@ -156,32 +169,45 @@ class ProcessingEngine(BaseProcessingUtils, Observer):
     #         Spectrum == np.max(Spectrum[Low_point: High_point]))  # Calculating which frequency has max power.
     #
     #     return maximumFrequency
-
-    def getCurrentChunk(self):
-        return self.recordChunks[-1]
     
-    def getCurrentChunkFreq(self):
-        return self.recordChunks[-1].chunkFreqs
-
-    def getCurrentChunkFFT(self):
-        return self.recordChunks[-1].chunkFFT
-
-    def getCurrentRTChunk(self):
-        return self.realTimeChunks[-1]
-
-    def getCurrentRTChunkFreq(self):
-        return self.realTimeChunks[-1].chunkFreqs
-
-    def getCurrentRTChunkFFT(self):
-        return self.realTimeChunks[-1].chunkFFT
-
-
+    
     # Used by observer pattern!
     
     def handleNewData(self, data, shouldSave=False):
         self.currentChunkNr += 1
         chunk = Chunk(data, self.currentChunkNr)
         self.realTimeChunks.append(chunk)
+        
         if shouldSave:
             self.recordChunks.append(chunk)
-            print("saved new chunk %d" % len(self.recordChunks))
+            self.fullAudioData = np.append(self.fullAudioData, chunk.rawData)
+            MessageServer.notifyEventClients(MsgTypes.UPDATE_PCM_CHART)
+            chunkHighestFreq = self.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
+            self.realTimeFrequencyEnvelope.append(chunkHighestFreq)
+            print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
+
+    #MessageClient
+    def handleMessage(self, msgType, data):
+        return {
+            MsgTypes.NEW_RECORDING: {self.realTimeFrequencyEnvelope.clear(), self.realTimePCMEnvelope.clear()}
+        }[msgType]
+
+    #______________________________________________________________________
+    
+    def getCurrentChunk(self):
+        return self.recordChunks[-1]
+    
+    def getCurrentChunkFreq(self):
+        return self.recordChunks[-1].chunkFreqs
+    
+    def getCurrentChunkFFT(self):
+        return self.recordChunks[-1].chunkFFT
+    
+    def getCurrentRTChunk(self):
+        return self.realTimeChunks[-1]
+    
+    def getCurrentRTChunkFreq(self):
+        return self.realTimeChunks[-1].chunkFreqs
+    
+    def getCurrentRTChunkFFT(self):
+        return self.realTimeChunks[-1].chunkFFT

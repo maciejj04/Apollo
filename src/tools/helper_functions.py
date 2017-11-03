@@ -5,7 +5,6 @@ import math
 import wave
 import struct
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
-from src.Engine.ReadFile import getRawAudioFramesFromFile
 
 def my_range(start, end, step):
     while start <= end:

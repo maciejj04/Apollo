@@ -1,8 +1,3 @@
-"""
-this is a stripped down version of the Ear class.
-It's designed to hold only a single audio sample in memory.
-"""
-
 import pyaudio
 import time
 import numpy as np
@@ -13,14 +8,13 @@ from src.Commons.InputDeviceInfo import InputDeviceInfo as Idi
 from src.StreamHandlers.Stream import Stream
 from src.Engine.ProcessingEngine import ProcessingEngine
 from src.Observable import Observable, Observer
-
+from src.MessageServer import MessageServer, MsgTypes
 
 # Observer: Stream
 # Observable for: ProcessingEngine
 class Ear(Observable, Observer):
     """
-    The Ear class is provides access to continuously recorded
-    (and mathematically processed) microphone data.
+    The Ear class provides access to continuously recorded microphone data.
     """
     
     chunkData = None  # will fill up with threaded recording data
@@ -29,7 +23,6 @@ class Ear(Observable, Observer):
     _recordData: np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
     _recordedFrames: int = 0
     stream: Stream = None
-    #_processingEngine: ProcessingEngine = ProcessingEngine()
     
     def __init__(self):
         Observable.__init__(self)
@@ -94,9 +87,7 @@ class Ear(Observable, Observer):
         
         for deviceIndex in mics:
             info = self.pyAudio.get_device_info_by_index(deviceIndex)
-            device = {
-                deviceIndex: info['name']
-            }
+            device = {deviceIndex: info['name']}
             Idi.foundDevices.update(device)
         
         return mics
@@ -122,10 +113,12 @@ class Ear(Observable, Observer):
     def startRecording(self):
         Logger.info("Starting recording")
         self._record = True
+        MessageServer.notifyClients(MsgTypes.NEW_RECORDING)
     
     def stopRecording(self):
         self._record = False
-        Logger.info("Stopping recording. Saved {nrOfRecFrames}->{real} frames".format(nrOfRecFrames=self._recordedFrames, real=Cai.numberOfFrames))
+        Logger.info("Stopping recording. Saved {nrOfRecFrames}->{real} frames".format(nrOfRecFrames=self._recordedFrames,
+                                                                                      real=Cai.numberOfFrames))
         self._recordedFrames = 0
         self.saveRecordedDataToFile()
     
@@ -137,7 +130,7 @@ class Ear(Observable, Observer):
         waveFile.writeframes(self._recordData.tostring())
         Logger.info("Saving recorded data as: " + fileName)
         waveFile.close()
-        self._recordData = np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
+        self._recordData = np.ones(0, dtype=Cai.sampleWidthNumpy)
     
     # For Observer pattern__________________________________________________________________________
     def notifyObservers(self, chunkData):
@@ -151,7 +144,7 @@ class Ear(Observable, Observer):
             self._recordData = np.append(self._recordData, self.chunkData)
             # self._recordData.append(chunkData)
             self._recordedFrames += Cai.getChunkSize()
-            print("_recordedFrames={}, nrOfframes = {}".format(self._recordedFrames, Cai.numberOfFrames))
+            #print("_recordedFrames={}, nrOfframes = {}".format(self._recordedFrames, Cai.numberOfFrames))
         elif self._recordedFrames >= Cai.numberOfFrames:
             self._recordData = self._recordData[:Cai.numberOfFrames]
             self.stopRecording()

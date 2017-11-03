@@ -7,8 +7,8 @@ class Chunk:
     chunksMinFreq: int
     chunksMaxFreq: int
     
-    chunkFFT: np.ndarray
-    chunkFreqs: np.ndarray
+    chunkFFT: np.ndarray = None
+    chunkFreqs: np.ndarray = None
     
     rawData: np.ndarray = None
     chunkNr: int
@@ -20,3 +20,7 @@ class Chunk:
         
     def setMinMaxFreqs(self, fqs: Tuple):
         self.chunkMinFreq, self.chunksMaxFreq = fqs
+        
+    def withMinMaxFreqs(self):
+        
+        return self

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1090</width>
+    <height>884</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Apollo</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Apollo.png</normaloff>Apollo.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLCDNumber" name="pcmLcd">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>10</y>
+      <width>91</width>
+      <height>61</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="FFTLcd">
+    <property name="geometry">
+     <rect>
+      <x>990</x>
+      <y>212</y>
+      <width>91</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="smallDecimalPoint">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>822</y>
+      <width>931</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="loopbackCheckBox">
+       <property name="text">
+        <string>loopback</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="listen">
+       <property name="text">
+        <string>listen</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="startButton">
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="recordButton">
+       <property name="text">
+        <string>Record</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="PlotWidget" name="personalFFTChart">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>410</y>
+      <width>931</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="personalPCMChart">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>609</y>
+      <width>931</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="fftsChart">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>211</y>
+      <width>931</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="pcmsChart">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>12</y>
+      <width>931</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1090</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionChoose_file"/>
+    <addaction name="actionSettings"/>
+    <addaction name="actionChange_microphone"/>
+   </widget>
+   <addaction name="menuOptions"/>
+  </widget>
+  <action name="actionChoose_file">
+   <property name="text">
+    <string>Choose file ...</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionChange_microphone">
+   <property name="text">
+    <string>Change microphone</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">pyqtgraph</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

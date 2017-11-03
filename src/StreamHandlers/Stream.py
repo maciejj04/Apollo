@@ -5,6 +5,7 @@ import threading
 import time
 import numpy as np
 from src.Observable import Observable
+import gc
 
 class Stream(Observable):
     
@@ -40,6 +41,8 @@ class Stream(Observable):
             self.data = np.fromstring(self._stream.read(Cai.getChunkSize()), dtype=np.int16)
             self.notifyObservers()
         
+            gc.collect()#?
+
         except Exception as E:
             print(" -- exception! terminating...")
             print(E, "\n" * 3)# TODO: raise?
