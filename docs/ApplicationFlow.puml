@@ -1,0 +1,12 @@
+@startuml
+
+
+[User Interface] <- [Interpret Engine] : Event
+[Interpret Engine] -> [ProcessingEngine] : Observes for data
+
+[ProcessingEngine] ..> [AudioFile] : Uses
+[ProcessingEngine] -> [Ear] : Observes
+
+[Ear] -> [Stream] : Observes
+
+@enduml

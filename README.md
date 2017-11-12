@@ -31,10 +31,8 @@ Full env setup:
 
 7. Install ffmpeg?
 
-
-Optional:
-	- python -m pip install matplotlib
-
+TODO:
+	- evaluate applying antialising filter before any signal processing and analysis. 
 
 Troubleshoot:
 	In case of: ImportError: DLL load failed: %1 nie jest prawidłową aplikacją systemu Win32.

@@ -6,6 +6,7 @@ import time
 import numpy as np
 from src.Observable import Observable
 import gc
+import pyaudio
 
 class Stream(Observable):
     
@@ -15,12 +16,13 @@ class Stream(Observable):
     chunksRead: int = 0
     data = None
     
-    def __init__(self, pyAudioObj):# TODO: probably i should pass only pyAudio
+    def __init__(self, pyAudioObj, inputDeviceIndex=Idi.currentlyUsedDeviceIndex):# TODO: probably i should pass only pyAudio
         Observable.__init__(self)
+        self.inputDeviceIndex = inputDeviceIndex
         self.pyAudio = pyAudioObj
     
     def open(self):
-        self._stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
+        self._stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=self.inputDeviceIndex,
                                          channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
                                          frames_per_buffer=Cai.getChunkSize())
         
@@ -34,7 +36,7 @@ class Stream(Observable):
     
         self._stream.stop_stream()
         self._stream.close()
-    
+
     def readChunk(self):
         """reads some audio and re-launches itself"""
         try:

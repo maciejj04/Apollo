@@ -1,0 +1,27 @@
+@startuml
+
+package "Commons" {
+FTP - [Audio]
+[CommonAudioInfo]
+[InputDeviceInfo]
+[Settings]
+[First Component] --> FTP
+}
+
+package "Engine" {
+HTTP - [First Component]
+[Another Component]
+}
+
+
+package "StreamHandlers" {
+    [Stream]
+}
+
+package "UI" {
+    [Stream]
+}
+
+Engine -> Commons : uses
+StreamHandlers -> Commons
+@enduml

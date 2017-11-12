@@ -38,10 +38,10 @@ class Ear(Observable, Observer):
         self.chunksRead = 0
     
     def getValidDeviceIndex(self):  # getvalidInputDeviceIndex?
-        """ Gets first available device by default. TODO?"""
+        """ Gets first available device by default."""
         
         mics = self.getValidInputDevices()
-        return mics[1]
+        return mics[1] if len(mics) > 1 else mics[0]
     
     def setCommonAudioInformations(self):
         info = self.pyAudio.get_device_info_by_index(Idi.currentlyUsedDeviceIndex)

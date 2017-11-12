@@ -1,5 +1,6 @@
 import numpy as np
 import pyqtgraph
+import pyaudio
 from PyQt4 import QtGui, QtCore
 
 from src.Engine.Ear import Ear
@@ -10,7 +11,7 @@ from src.Engine.ProcessingEngine import ProcessingEngine
 from src.Commons.Audio import Audio
 from src.MessageServer import MessageServer, MsgTypes
 from src.MessageClient import MessageClient
-
+from src.StreamHandlers.OutputStreamHandler import OutputStreamHandler
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
     class _Chart:
@@ -28,17 +29,17 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
         
         self.maxFFT = 0
         self.maxPCM = 0
-        # self.loopbackCheckBox.stateChanged.connect(self.loopbackCheckBoxAction)
+        self.loopbackCheckBox.stateChanged.connect(self._loopbackCheckBoxAction)
         self.startButton.clicked.connect(self.startButtonAction)
         self.listen.stateChanged.connect(self.update)
         self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
         self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
         self.recordButton.clicked.connect(self.recordButtonAction)
+        self.loopbackStreamHandler = OutputStreamHandler()
         self.ear = Ear()
         rawInputAudioData = Audio().loadFromPathAndAdjust().getRawDataFromWav()
         self.liveProcessingEngine = ProcessingEngine()
         self.ear.addObserver(self.liveProcessingEngine)
-        # TODO: move drawOce invocation underneath! Requires getting raw audio data!
         self.staticProcessingEngine = ProcessingEngine(rawInputAudioData)
         
         # self._drawOnce(
@@ -108,8 +109,15 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
         self.ear.startRecording()
     
     def _loopbackCheckBoxAction(self):
-        if not self.loopbackCheckBox.isChecked():
+        if self.loopbackCheckBox.isChecked():
+            self.loopbackStreamHandler.open()
+            self.ear.stream.addObserver(self.loopbackStreamHandler)
+
+        else:
+            self.ear.stream.deleteObserver(self.loopbackStreamHandler)
+            self.loopbackStreamHandler.closeOutputStream()
             # TODO: close output stream
+            # TODO: close corresponding PyAudio!(reference within Stream object
             return
     
     def _updateFftsChart(self, yRange=[0, 2000]):
@@ -132,7 +140,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
             self.fftsChart.plot(x=chart.xValues, y=chart.chart, pen=chart.color, title="FFTs Chart")
     
     def _updatePcmsChart(self):
-        self.pcmsChart.plot(y=self.liveProcessingEngine.fullAudioData, pen='b')
+        pass
+        #self.pcmsChart.plot(y=self.liveProcessingEngine.fullAudioData, pen='b')
 
     def _drawOnce(self, chart, yData, yRange=[0, 2000]):
         """

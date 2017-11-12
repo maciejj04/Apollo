@@ -31,11 +31,8 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     """
         class can work in state-full or state-less mode(?)
         Real Time analysis possibilites:
-            - FFT
-            - min/max freq of a sample
-
+            - TODO
     """
-
 
     datax = None  # TODO: not used yet. For now datax is in Ear
     
@@ -61,7 +58,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         :param data: data in np.array return format form
         """
         Observer.__init__(self)
-        MessageServer.register(self)
+        MessageServer.register(self) #TODO: change to registerForEvent
 
         self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
         self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
