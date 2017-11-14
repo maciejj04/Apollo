@@ -1,7 +1,7 @@
-from abc import abstractmethod
+import abc
 
-class MessageClient:
-    
-    @abstractmethod
+
+class MessageClient(abc.ABC):
+    @abc.abstractmethod
     def handleMessage(self, msgType, data):
         pass

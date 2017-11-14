@@ -133,6 +133,7 @@ class Ear(Observable, Observer):
         self._recordData = np.ones(0, dtype=Cai.sampleWidthNumpy)
     
     # For Observer pattern__________________________________________________________________________
+    
     def notifyObservers(self, chunkData):
         for o in self._observers:
             o.handleNewData(chunkData, shouldSave=self._record)
@@ -142,23 +143,10 @@ class Ear(Observable, Observer):
         self.chunkData = data
         if self._record and self._recordedFrames < Cai.numberOfFrames:
             self._recordData = np.append(self._recordData, self.chunkData)
-            # self._recordData.append(chunkData)
             self._recordedFrames += Cai.getChunkSize()
-            #print("_recordedFrames={}, nrOfframes = {}".format(self._recordedFrames, Cai.numberOfFrames))
         elif self._recordedFrames >= Cai.numberOfFrames:
             self._recordData = self._recordData[:Cai.numberOfFrames]
             self.stopRecording()
             
         # TODO: this should be caluculated in separate thread(?)
         self.notifyObservers(self.chunkData)
-
-# if __name__ == "__main__":
-#     ear = Ear(updatesPerSecond=10)  # optionally set sample rate here
-#     ear.stream_start()  # goes forever
-#     lastRead = ear.chunksRead
-#     while True:
-#         while lastRead == ear.chunksRead:
-#             time.sleep(.01)
-#         print(ear.chunksRead, len(ear.data))
-#         lastRead = ear.chunksRead
-#     print("DONE")

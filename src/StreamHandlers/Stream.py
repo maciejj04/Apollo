@@ -5,18 +5,20 @@ import threading
 import time
 import numpy as np
 from src.Observable import Observable
+from src.Observable import executeInNewThread
 import gc
 import pyaudio
 
+
 class Stream(Observable):
-    
     _stream = None
     keepListening: bool = True
     parent = None
     chunksRead: int = 0
     data = None
     
-    def __init__(self, pyAudioObj, inputDeviceIndex=Idi.currentlyUsedDeviceIndex):# TODO: probably i should pass only pyAudio
+    def __init__(self, pyAudioObj,
+                 inputDeviceIndex=Idi.currentlyUsedDeviceIndex):  # TODO: probably i should pass only pyAudio
         Observable.__init__(self)
         self.inputDeviceIndex = inputDeviceIndex
         self.pyAudio = pyAudioObj
@@ -26,41 +28,41 @@ class Stream(Observable):
                                          channels=Cai.numberOfChannels, rate=Cai.frameRate, input=True,
                                          frames_per_buffer=Cai.getChunkSize())
         
-        Logger.info("Opening stream based on device: "+str(Idi.currentlyUsedDeviceIndex))
+        Logger.info("Opening stream based on device: " + str(Idi.currentlyUsedDeviceIndex))
         return self
-        
+    
     def close(self):
         self.keepListening = False  # the threads should self-close
         while (self.threadObject.isAlive()):  # wait for all threads to close
             time.sleep(.1)
-    
+        
         self._stream.stop_stream()
         self._stream.close()
-
+    
     def readChunk(self):
         """reads some audio and re-launches itself"""
         try:
             self.data = np.fromstring(self._stream.read(Cai.getChunkSize()), dtype=np.int16)
             self.notifyObservers()
+            
+            gc.collect()  # ?
         
-            gc.collect()#?
-
         except Exception as E:
             print(" -- exception! terminating...")
-            print(E, "\n" * 3)# TODO: raise?
+            print(E, "\n" * 3)  # TODO: raise?
             self.keepListening = False
-    
+        
         if self.keepListening:
             self._newStreamThread()
         else:
             print(" -- stream STOPPED")
         self.chunksRead += 1
-        
+    
     def _newStreamThread(self):
-        self.threadObject = threading.Thread(target=self.readChunk)
-        self.threadObject.start()
-
-        
+        self.threadObject = threading.Thread(target=self.readChunk).start()
+        # self.threadObject.start()
+    
+    @executeInNewThread
     def notifyObservers(self):
         for o in self._observers:
             o.handleNewData(self.data)

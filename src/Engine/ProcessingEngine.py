@@ -9,6 +9,7 @@ from collections import deque
 from src.MessageClient import MessageClient
 from src.MessageServer import MessageServer, MsgTypes
 
+
 # def checkParametersBeforeCall(func):
 #     def funcWrapper():
 # from functools import wraps
@@ -33,7 +34,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         Real Time analysis possibilites:
             - TODO
     """
-
+    
     datax = None  # TODO: not used yet. For now datax is in Ear
     
     fullAudioData: np.ndarray = None
@@ -46,9 +47,9 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     maxFrequency: int = None
     
     recordChunks: list = []
-    realTimeChunks: deque = None#deque(maxlen=Cai.numberOfFrames)
-    realTimeFrequencyEnvelope: deque = None#deque(maxlen=Cai.numberOfFrames)
-    realTimePCMEnvelope: deque = None#deque(maxlen=Cai.numberOfFrames)
+    realTimeChunks: deque = None  # deque(maxlen=Cai.numberOfFrames)
+    realTimeFrequencyEnvelope: deque = None  # deque(maxlen=Cai.numberOfFrames)
+    realTimePCMEnvelope: deque = None  # deque(maxlen=Cai.numberOfFrames)
     
     currentChunkNr: int = -1
     recording = False
@@ -58,13 +59,12 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         :param data: data in np.array return format form
         """
         Observer.__init__(self)
-        MessageServer.register(self) #TODO: change to registerForEvent
-
+        MessageServer.register(self)  # TODO: change to registerForEvent
+        
         self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
         self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
         self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
-
-
+        
         if data is None:
             self.fullAudioData = np.ones(0, dtype=Cai.sampleWidthNumpy)
             return
@@ -182,14 +182,14 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
             chunkHighestFreq = self.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
             self.realTimeFrequencyEnvelope.append(chunkHighestFreq)
             print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
-
-    #MessageClient
+    
+    # MessageClient
     def handleMessage(self, msgType, data):
         return {
             MsgTypes.NEW_RECORDING: {self.realTimeFrequencyEnvelope.clear(), self.realTimePCMEnvelope.clear()}
         }[msgType]
-
-    #______________________________________________________________________
+    
+    # ______________________________________________________________________
     
     def getCurrentChunk(self):
         return self.recordChunks[-1]
@@ -208,3 +208,9 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     
     def getCurrentRTChunkFFT(self):
         return self.realTimeChunks[-1].chunkFFT
+    
+    def getChunk(self, nr: int):
+        return self.realTimeChunks[nr].rawData
+    
+    def getChunkFFT(self, nr: int):
+        return self.realTimeChunks[nr].chunkFFT

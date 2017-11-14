@@ -12,8 +12,9 @@ from src.Commons.Audio import Audio
 from src.MessageServer import MessageServer, MsgTypes
 from src.MessageClient import MessageClient
 from src.StreamHandlers.OutputStreamHandler import OutputStreamHandler
+from src.Engine.StaticAudio import StaticAudio
 
-class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
+class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):#, MessageClient
     class _Chart:
         pass
     
@@ -35,12 +36,13 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
         self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
         self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
         self.recordButton.clicked.connect(self.recordButtonAction)
-        self.loopbackStreamHandler = OutputStreamHandler()
         self.ear = Ear()
         rawInputAudioData = Audio().loadFromPathAndAdjust().getRawDataFromWav()
         self.liveProcessingEngine = ProcessingEngine()
         self.ear.addObserver(self.liveProcessingEngine)
         self.staticProcessingEngine = ProcessingEngine(rawInputAudioData)
+        self.loopbackStreamHandler = OutputStreamHandler(StaticAudio(rawInputAudioData))
+
         
         # self._drawOnce(
         #     chart=self.fftsChart,
@@ -112,23 +114,22 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
         if self.loopbackCheckBox.isChecked():
             self.loopbackStreamHandler.open()
             self.ear.stream.addObserver(self.loopbackStreamHandler)
-
+        
         else:
             self.ear.stream.deleteObserver(self.loopbackStreamHandler)
             self.loopbackStreamHandler.closeOutputStream()
-            # TODO: close output stream
-            # TODO: close corresponding PyAudio!(reference within Stream object
-            return
     
     def _updateFftsChart(self, yRange=[0, 2000]):
         
         fftsChartList = []
         staticChart = self._Chart()
+        staticChart.name = "StaticChart"
         staticChart.chart = self.staticProcessingEngine.getFrequencyEnvelope()
         staticChart.color = pyqtgraph.mkPen(color='r', width=2, cosmetic=True)
         liveChart = self._Chart()
         liveChart.chart = list(self.liveProcessingEngine.realTimeFrequencyEnvelope)
         liveChart.color = pyqtgraph.mkPen(color='g', width=2)
+        liveChart.name = "LiveChart"
         fftsChartList.append(staticChart)
         fftsChartList.append(liveChart)
         
@@ -141,8 +142,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
     
     def _updatePcmsChart(self):
         pass
-        #self.pcmsChart.plot(y=self.liveProcessingEngine.fullAudioData, pen='b')
-
+        # self.pcmsChart.plot(y=self.liveProcessingEngine.fullAudioData, pen='b')
+    
     def _drawOnce(self, chart, yData, yRange=[0, 2000]):
         """
         :param chart: pyqtgraph object to draw on
@@ -156,9 +157,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow, MessageClient):
         chart.setRange(yRange=yRange)
         chart.plot(y=yData, pen=pen, clear=True)
     
-    
     def _getLastNSeconds(self, data):
         return
     
     def handleMessage(self, msgType, data):
-        self._updatePcmsChart()
+        return {
+            MsgTypes.UPDATE_PCM_CHART: self._updatePcmsChart(),
+        }[msgType]

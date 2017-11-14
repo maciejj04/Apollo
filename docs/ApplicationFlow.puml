@@ -7,6 +7,9 @@
 [ProcessingEngine] ..> [AudioFile] : Uses
 [ProcessingEngine] -> [Ear] : Observes
 
+[Ear] -> [OutputStream] : Event
 [Ear] -> [Stream] : Observes
 
+[Stream] <- mic
+[OutputStream] -> speaker_headphones
 @enduml
