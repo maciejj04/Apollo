@@ -88,7 +88,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):#, MessageClient
     
     def generateChooseFileDialog(self):
         filePath = QtGui.QFileDialog.getOpenFileName()
-        # TODO: !!!!!!!!!!!!!!!!!!!!!!!!!
+        # TODO: Set file as staticFile
         self._drawOnce(
             chart=self.fftsChart,
             yData=self.staticProcessingEngine.calculateFrequencyEnvelope(),

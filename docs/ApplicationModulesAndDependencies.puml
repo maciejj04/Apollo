@@ -9,8 +9,7 @@ FTP - [Audio]
 }
 
 package "Engine" {
-HTTP - [First Component]
-[Another Component]
+[ProcessingEngine]->[InterpretEngine]
 }
 
 
@@ -20,6 +19,7 @@ package "StreamHandlers" {
 
 package "UI" {
     [Stream]
+    [OutputStream]
 }
 
 Engine -> Commons : uses

@@ -17,6 +17,7 @@ Full env setup:
 3. Install PyQt4 - You may use 'PyQt4-4.11.4-cp36-cp36m-win_amd64.whl' file which is included in project files, 
    or download it from: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyqt4.
 	- pip install PyQt4-4.11.4-cp36-cp36m-win_amd64.whl
+
 4. Install pyqtgraph widget - You may use 'pyqtgraph-0.10.0.win-amd64.exe' file which is included in project files, 
    or download it from: http://www.pyqtgraph.org/
    	- pyqtgraph-0.10.0.win-amd64.exe
@@ -29,7 +30,7 @@ Full env setup:
    or download it from: https://pypi.python.org/pypi/PyAudio#downloads
 	- pip install PyAudio-0.2.11-cp36-cp36m-win_amd64.whll
 
-7. Install ffmpeg?
+7. Install resampy
 
 TODO:
 	- evaluate applying antialising filter before any signal processing and analysis. 
