@@ -108,7 +108,7 @@ class Audio:
                          - sampwidth {} (in bytes)
                          - comptype {}
                          - compname {}
-                 - these are original audio file informations, audio data will be converted to input device audio format - to properly operate on this two files'''
+                 - these are converted audio file informations'''#audio data will be converted to input device audio format - to properly operate on this two files
                     .format(self.filePath, self.numberOfFrames, self.frameRate, self.numberOfChannels, self.sampleWidth,
                             self.compType, self.compName,
                             dateTime=str(datetime.now()))

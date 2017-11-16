@@ -39,6 +39,7 @@ class OutputStreamHandler(Observer, MessageClient):
     def closeOutputStream(self):
         self._stream.close()
         self.pyAudio.terminate()
+        Logger.info("Output stream closed.")
     
     # for observer pattern___________________________________________________
     
