@@ -1,13 +1,14 @@
 from enum import Enum
-
+from src.Engine.helpers.NewThreadExecutionAanotation import executeInNewThread
 
 class MsgTypes(Enum):
     NEW_RECORDING = 1,
     UPDATE_PCM_CHART = 2,
     NEW_CURRENT_CHUNK = 3,
-    ROCORDING_STOP = 4,
-    ROCORDING_PAUSE = 5
-
+    RECORDING_STOP = 4,
+    RECORDING_PAUSE = 5,
+    UPDATE_FREQ_SPECTR_CHART = 6,
+    UPDATE_FREQS_CHART = 7
 
 class MessageServer:
     _observers: list = []
@@ -15,7 +16,10 @@ class MessageServer:
         MsgTypes.NEW_RECORDING: [],
         MsgTypes.UPDATE_PCM_CHART: [],
         MsgTypes.NEW_CURRENT_CHUNK: [],  # Use only during recording
-        
+        MsgTypes.RECORDING_STOP: [],
+        MsgTypes.RECORDING_PAUSE: [],
+        MsgTypes.UPDATE_FREQ_SPECTR_CHART: [],
+        MsgTypes.UPDATE_FREQS_CHART: []
     }
     
     @classmethod

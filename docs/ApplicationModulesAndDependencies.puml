@@ -1,15 +1,18 @@
 @startuml
 
 package "Commons" {
-FTP - [Audio]
 [CommonAudioInfo]
 [InputDeviceInfo]
 [Settings]
-[First Component] --> FTP
+[First Component]
 }
 
 package "Engine" {
+[Audio]<|--[StaticAudio]
+[Audio]<|--[LiveAudio]
 [ProcessingEngine]->[InterpretEngine]
+[Converter]
+[Ear]
 }
 
 
@@ -23,5 +26,5 @@ package "UI" {
 }
 
 Engine -> Commons : uses
-StreamHandlers -> Commons
+StreamHandlers -> Commons : uses
 @enduml

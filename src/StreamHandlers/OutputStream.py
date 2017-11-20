@@ -12,13 +12,12 @@ from src.Engine.StaticAudio import StaticAudio
 DEFAULT_DEVICE_INDEX = 0
 
 
-class OutputStreamHandler(Observer, MessageClient):
+class OutputStream(Observer, MessageClient):
     
     # TODO: needs to be informed about new data that comes both from mic(done) and corresponding inputaudio file chunk ;'D
     
     def __init__(self, staticAudio: StaticAudio):
         MessageServer.registerForEvent(self, MsgTypes.NEW_CURRENT_CHUNK)
-        MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
         self.pyAudio = pyaudio.PyAudio()
         self._staticAudio = staticAudio
         outputDevices = validateOutputDevices(self.pyAudio)
@@ -43,15 +42,14 @@ class OutputStreamHandler(Observer, MessageClient):
     
     # for observer pattern___________________________________________________
     
-    def handleNewData(self, data, shouldSave=False):
+    def handleNewData(self, data):
         # self._newStreamThread(data.tostring())
         self.writeChunk(data.tostring())
 
     def handleMessage(self, msgType, data):
         return {
-            MsgTypes.NEW_CURRENT_CHUNK: self.setCurrentProcessedChunkNr(data),
-            #MsgTypes.NEW_RECORDING: self.
-        }[msgType]
+            MsgTypes.NEW_CURRENT_CHUNK: self.setCurrentProcessedChunkNr,
+        }[msgType](data)
 
     def setCurrentProcessedChunkNr(self, nr: int):
         self.currentProcessedChunkNr = nr

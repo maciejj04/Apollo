@@ -12,7 +12,7 @@ from src.MessageServer import MessageServer, MsgTypes
 
 # Observer: Stream
 # Observable for: ProcessingEngine
-class Ear(Observable, Observer):
+class Ear():
     """
     The Ear class provides access to continuously recorded microphone data.
     """
@@ -36,6 +36,7 @@ class Ear(Observable, Observer):
                     .format(name=Idi.name, device=Idi.currentlyUsedDeviceIndex, hz=Cai.frameRate))
         
         self.chunksRead = 0
+        self.stream = Stream(self.pyAudio)
     
     def getValidDeviceIndex(self):  # getvalidInputDeviceIndex?
         """ Gets first available device by default."""
@@ -104,49 +105,28 @@ class Ear(Observable, Observer):
     def stream_start(self):
         """adds data to self.data until termination signal"""
         self.setCommonAudioInformations()
-        self.stream = Stream(self.pyAudio).open()
-        self.stream.addObserver(self)
+        if self.stream is not None:
+            self.stream.open()
+        else:
+            raise ValueError("Stream is none (in Ear)")
         
         self.stream.readChunk()
-    
-    # RECORDING API
-    def startRecording(self):
-        Logger.info("Starting recording")
-        self._record = True
-        MessageServer.notifyClients(MsgTypes.NEW_RECORDING)
-    
-    def stopRecording(self):
-        self._record = False
-        Logger.info("Stopping recording. Saved {nrOfRecFrames}->{real} frames".format(nrOfRecFrames=self._recordedFrames,
-                                                                                      real=Cai.numberOfFrames))
-        self._recordedFrames = 0
-        self.saveRecordedDataToFile()
-    
-    def saveRecordedDataToFile(self, fileName='Recorded.wav'):
-        waveFile = wave.open(fileName, 'wb')
-        waveFile.setnchannels(Cai.numberOfChannels)
-        waveFile.setsampwidth(Cai.sampleWidthInBytes)
-        waveFile.setframerate(Cai.frameRate)
-        waveFile.writeframes(self._recordData.tostring())
-        Logger.info("Saving recorded data as: " + fileName)
-        waveFile.close()
-        self._recordData = np.ones(0, dtype=Cai.sampleWidthNumpy)
-    
+        
     # For Observer pattern__________________________________________________________________________
     
-    def notifyObservers(self, chunkData):
-        for o in self._observers:
-            o.handleNewData(chunkData, shouldSave=self._record)
-    
-    # USED BY OBSERVABLE(Stream)
-    def handleNewData(self, data):
-        self.chunkData = data
-        if self._record and self._recordedFrames < Cai.numberOfFrames:
-            self._recordData = np.append(self._recordData, self.chunkData)
-            self._recordedFrames += Cai.getChunkSize()
-        elif self._recordedFrames >= Cai.numberOfFrames:
-            self._recordData = self._recordData[:Cai.numberOfFrames]
-            self.stopRecording()
-            
-        # TODO: this should be caluculated in separate thread(?)
-        self.notifyObservers(self.chunkData)
+    # def notifyObservers(self, chunkData):
+    #     for o in self._observers:
+    #         o.handleNewData(chunkData, shouldSave=self._record)
+    #
+    # # USED BY OBSERVABLE(Stream)
+    # def handleNewData(self, data):
+    #     self.chunkData = data
+    #     if self._record and self._recordedFrames < Cai.numberOfFrames:
+    #         self._recordData = np.append(self._recordData, self.chunkData)
+    #         self._recordedFrames += Cai.getChunkSize()
+    #     elif self._recordedFrames >= Cai.numberOfFrames:
+    #         self._recordData = self._recordData[:Cai.numberOfFrames]
+    #         self.stopRecording()
+    #
+    #     # TODO: this should be caluculated in separate thread(?)
+    #     self.notifyObservers(self.chunkData)

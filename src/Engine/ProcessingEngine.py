@@ -8,7 +8,8 @@ from src.Engine.Chunk import Chunk
 from collections import deque
 from src.MessageClient import MessageClient
 from src.MessageServer import MessageServer, MsgTypes
-
+from src.Engine.StaticAudio import StaticAudio
+from src.Engine.LiveAudio import LiveAudio
 
 # def checkParametersBeforeCall(func):
 #     def funcWrapper():
@@ -54,32 +55,35 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     currentChunkNr: int = -1
     recording = False
     
-    def __init__(self, data: np.ndarray = None):
+    def __init__(self, staticAudio: StaticAudio):
         """
         :param data: data in np.array return format form
         """
         Observer.__init__(self)
-        MessageServer.register(self)  # TODO: change to registerForEvent
+        MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
+        MessageServer.registerForEvent(self, MsgTypes.RECORDING_STOP)
+
+        self.shouldSave = False
+
+
+        self.staticAudio = staticAudio
+        self.calculateStaticAudioParameters()
+        self.liveAudios = []
+        self.liveAudios.append(LiveAudio())
+        self.currentLiveChunk: Chunk
+        
         
         self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
         self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
         self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
-        
-        if data is None:
-            self.fullAudioData = np.ones(0, dtype=Cai.sampleWidthNumpy)
-            return
-        
-        self.fullAudioData = data
-        self.fullAudioFreqs, self.fullAudioFFT = self.getFFT(data, Cai.frameRate)
     
-    def withData(self, data):
-        self.data = data
-        return self
+    def getStaticAudioFrequencyEnvelope(self):
+        return self.staticAudioFrequencyEnvelope
     
     def getFrequencyEnvelope(self):
         return self.calculateFrequencyEnvelope() if self.frequencyEnvelope is None else self.frequencyEnvelope
     
-    def calculateFrequencyEnvelope(self, rawDataArray=None):
+    def calculateFrequencyEnvelope(self, rawDataArray=None) -> []:
         if rawDataArray is None:
             rawDataArray = self.fullAudioData
         chunk = Cai.getChunkSize()
@@ -139,9 +143,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         return freq_in_hertz
     
     def calculatePCMEnvelope(self, data=None):  # obwiednia
-        if data is None:
-            data = self.fullAudioData
-        
         pass
     
     # TODO: ......................
@@ -170,29 +171,38 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     
     # Used by observer pattern!
     
-    def handleNewData(self, data, shouldSave=False):
+    def handleNewData(self, data):
         self.currentChunkNr += 1
         chunk = Chunk(data, self.currentChunkNr)
-        self.realTimeChunks.append(chunk)
+        self.currentLiveChunk = chunk
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQ_SPECTR_CHART, chunk)
         
-        if shouldSave:
-            self.recordChunks.append(chunk)
-            self.fullAudioData = np.append(self.fullAudioData, chunk.rawData)
-            MessageServer.notifyEventClients(MsgTypes.UPDATE_PCM_CHART)
-            chunkHighestFreq = self.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
-            self.realTimeFrequencyEnvelope.append(chunkHighestFreq)
-            print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
+        if self.shouldSave:
+            self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
+            self.processChunkAndAppendToLiveData(chunk)
+            #print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
     
     # MessageClient
     def handleMessage(self, msgType, data):
-        return {
-            MsgTypes.NEW_RECORDING: {self.realTimeFrequencyEnvelope.clear(), self.realTimePCMEnvelope.clear()}
-        }[msgType]
-    
+
+        if msgType == MsgTypes.NEW_RECORDING:
+            self.setupNewLiveRecording()
+            self.shouldSave = True
+            return
+        elif msgType == MsgTypes.RECORDING_PAUSE:
+            raise NotImplementedError()
+        elif msgType == MsgTypes.RECORDING_STOP:
+            self.shouldSave = False
+        else:
+            raise Exception("Wrong msgType!! Check impl of MessageService for errors!")
+        
     # ______________________________________________________________________
     
+    def getCurrentLiveAudio(self) -> LiveAudio:
+        return self.liveAudios[-1]
+    
     def getCurrentChunk(self):
-        return self.recordChunks[-1]
+        return self.getCurrentLiveAudio().getCurrentLiveProcessedChunk()
     
     def getCurrentChunkFreq(self):
         return self.recordChunks[-1].chunkFreqs
@@ -204,13 +214,32 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         return self.realTimeChunks[-1]
     
     def getCurrentRTChunkFreq(self):
-        return self.realTimeChunks[-1].chunkFreqs
+        return self.getCurrentLiveAudio().chunks[-1].chunkFreqs
     
     def getCurrentRTChunkFFT(self):
-        return self.realTimeChunks[-1].chunkFFT
-    
-    def getChunk(self, nr: int):
-        return self.realTimeChunks[nr].rawData
+        return self.getCurrentLiveAudio().chunks[-1].chunkFFT
+
+    def getChunksRawData(self, nr: int):
+        return self.getCurrentLiveAudio().chunks[nr].rawData
     
     def getChunkFFT(self, nr: int):
-        return self.realTimeChunks[nr].chunkFFT
+        return self.getCurrentLiveAudio().chunks[nr].chunkFFT
+
+    def getCurrentChunksFrequencySpectrum(self):
+        return self.currentLiveChunk.chunkFFT
+
+    def setupNewLiveRecording(self):
+        self.liveAudios.append(LiveAudio())
+
+    def calculateStaticAudioParameters(self):
+        # clacualte from pulginsA
+        self.staticAudioFrequencyEnvelope = self.calculateFrequencyEnvelope(self.staticAudio.rawData)
+        
+        
+    def processChunkAndAppendToLiveData(self, chunk: Chunk):
+        # TODO: should load plugin analysis
+        freqInHertz = ProcessingEngine.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
+        currentLiveAudio = self.getCurrentLiveAudio()
+        currentLiveAudio.parameters["frequencyEnvelope"].append(freqInHertz)
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": freqInHertz})
+        #currentLiveAudio.parameters["PCMEnvelope"].append()

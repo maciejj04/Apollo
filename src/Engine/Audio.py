@@ -2,6 +2,7 @@ import numpy as np
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from .Chunk import Chunk
 import abc
+from collections import deque
 
 
 class Audio(abc.ABC):
@@ -16,7 +17,7 @@ class Audio(abc.ABC):
     
     def getCurrentLiveProcessedChunk(self):
         #TODO: !!!
-        return self.chunks.item(self.currentLiveProcessedChunkNr)
+        return self.chunks[self.currentLiveProcessedChunkNr]
     
     def getLastNChunks(self, n: int):
         return self.chunks[:-n]

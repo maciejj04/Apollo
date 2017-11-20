@@ -22,10 +22,13 @@ class Converter:
         
         if wav.getframerate() != Cai.frameRate:
             Logger.info("Resampling: {source} -> {target}".format(source=wav.getframerate(), target=Cai.frameRate))
-            rawData = resampy.resample(np.fromstring(rawData, dtype=np.int16), wav.getframerate(), Cai.frameRate).tostring()
-            # TODO: resample sould recieve np.ndarray :float, not np.int16
-            # TODO: try catch
-        
+            try:
+                rawData = resampy.resample(np.fromstring(rawData, dtype=np.int16), wav.getframerate(), Cai.frameRate).tostring()
+                # TODO: resample sould recieve np.ndarray :float, not np.int16
+            except ValueError | TypeError as e:
+                Logger.info("Resampling exception! ValueError | TypeError\n")
+                raise e
+                
         if wav.getsampwidth() != Cai.sampleWidthInBytes:
             Logger.info("BitDepth change: {source} -> {target}".format(source=wav.getsampwidth(), target=Cai.sampleWidthInBytes))
             rawData = audioop.lin2lin(rawData, wav.getsampwidth(), Cai.sampleWidthInBytes)

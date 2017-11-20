@@ -4,23 +4,11 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from typing import Tuple
 
 class Chunk:
-    chunksMinFreq: int
-    chunksMaxFreq: int
-    
-    chunkFFT: np.ndarray = None
-    chunkFreqs: np.ndarray = None
-    
-    rawData: np.ndarray = None
-    chunkNr: int
-    
-    def __init__(self, rawData: np.ndarray, chunkNr):
+    def __init__(self, rawData: np.ndarray, chunkNr=None):
+        
         self.rawData = rawData
         self.chunkFreqs, self.chunkFFT = BaseProcessingUtils.getFFT(self.rawData, Cai.frameRate)
-        self.chunkNr = chunkNr
-        
-    def setMinMaxFreqs(self, fqs: Tuple):
-        self.chunkMinFreq, self.chunksMaxFreq = fqs
-        
-    def withMinMaxFreqs(self):
-        
-        return self
+        self.chunkNr = chunkNr  # TODO: delete(?)
+
+        self.chunksMinFreq = np.min(np.abs(self.chunkFFT))
+        self.chunksMaxFreq = np.max(np.abs(self.chunkFFT))

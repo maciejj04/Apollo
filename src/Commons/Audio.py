@@ -17,7 +17,7 @@ class Audio:
     compType: str = None
     compName: str = None
     
-    def __init__(self, filePath='./resources/g1.wav'):#saxophone-weep, 220_440
+    def __init__(self, filePath='./resources/saxophone-weep.wav'):#saxophone-weep, 220_440
         self.filePath = filePath
 
     def loadFromPathAndAdjust(self, filePath: str = None):

@@ -10,8 +10,7 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 class StaticAudio(Audio, MessageClient):
     def __init__(self, rawData: np.ndarray):
         Audio.__init__(self)
-        MessageServer.registerForEvent(self, MsgTypes.NEW_CURRENT_CHUNK)
-        
+        self.rawData = rawData
         self.calculateChunks(rawData)
         
     def _setCurrentProcessedChunkNr(self, nr: int):
@@ -29,3 +28,7 @@ class StaticAudio(Audio, MessageClient):
         return {
             MsgTypes.NEW_CURRENT_CHUNK: self._setCurrentProcessedChunkNr(data)
         }[msgType]
+
+    @property
+    def getChunk(self, nr: int):
+        return self.chunks[nr]
