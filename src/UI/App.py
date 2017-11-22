@@ -51,32 +51,32 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.recordButton.clicked.connect(self.recordButtonAction)
         self.ear = Ear()
         rawInputAudioData = Audio().loadFromPathAndAdjust().getRawDataFromWav()
-        
-        self.processingEngine = ProcessingEngine(staticAudio=StaticAudio(rawData=rawInputAudioData))
+
+        self.staticAudio = StaticAudio(rawData=rawInputAudioData)
+        self.processingEngine = ProcessingEngine(staticAudio=self.staticAudio)
+
         self.ear.stream.addObserver(self.processingEngine)
         self.loopbackStreamHandler = OutputStream(StaticAudio(rawInputAudioData))
         
         # charts Initialization
-        self.freqCharts = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
+        self.freqChartsWidget = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
             "orgEnvelope": self.processingEngine.staticAudioFrequencyEnvelope,
             "liveFreqsEnvelope": []
         })
+        self.pcmChartWidget = self._ChartWidget({"orgEnvelope": "r", "livePcmEnvelope": "b"}, yValues={
+            "orgEnvelope": np.absolute(self.staticAudio.rawData), # ???
+            "livePcmEnvelope": []
+        })
         
         
-        # self._drawOnce(
-        #     chart=self.fftsChart,
-        #     yData=self.liveProcessingEngine.calculateFrequencyEnvelope(),
-        #     #  (min, max) = self.liveProcessingEngine.calculateMinMaxFrequencies()
-        #     yRange=[0, 2000]
-        # )
-        self.pcmsChart.plot(y=self.processingEngine.fullAudioData, pen='r')
-        # self._updateFftsChart()
-        
+        self.pcmsChart.plot(y=self.staticAudio.rawData, pen='r')
+        #self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
         self.fftsChart.plot(self.processingEngine.getStaticAudioFrequencyEnvelope(), pen='r')
 
         self.ear.stream_start()  # TODO: Do I need this here?
         self.shouldUpdatePersonalFFTChart = False
         self.shouldUpdateFrequenciesChart = False
+        self.shouldUpdatePcmChart = False
         self.update()
     
     def update(self):
@@ -114,11 +114,16 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             
         if self.shouldUpdateFrequenciesChart:
             #TODO: corrent! For loop every chart !
-            for key, value in self.freqCharts.yValuesDict.items():
-                self.fftsChart.plot(x=self.freqCharts.xValues, y=value, pen=self.freqCharts.pens[key])
-                self.shouldUpdateFrequenciesChart = False
+            for key, value in self.freqChartsWidget.yValuesDict.items():
+                self.fftsChart.plot(x=self.freqChartsWidget.xValues, y=value, pen=self.freqChartsWidget.pens[key])
 
-        
+            self.shouldUpdateFrequenciesChart = False
+
+        if self.shouldUpdatePcmChart:
+            for key, value in self.pcmChartWidget.yValuesDict.items():
+                self.fftsChart.plot(x=self.pcmChartWidget.xValues, y=value, pen=self.pcmChartWidget.pens[key])
+
+
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
     def generateChooseFileDialog(self):
@@ -157,19 +162,12 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
     def _updateFrequenciesChart(self, chartsFreqs: dict, yRange=[0, 2000]):
         
         for key, value in chartsFreqs.items():
-            self.freqCharts.yValuesDict[key].append(value)
+            self.freqChartsWidget.yValuesDict[key].append(value)
             
         self.shouldUpdateFrequenciesChart = True
-        
-        # self.fftsChart.setRange(yRange=yRange)
-        # self.fftsChart.plotItem.clear()
-        # for chart in fftsChartList:
-        #     if not hasattr(chart, "xValues"):
-        #         chart.xValues = None
-        #     self.fftsChart.plot(x=chart.xValues, y=chart.chart, pen=chart.color, title="FFTs Chart")
     
     def _updatePcmsChart(self):
-        pass
+        self.shouldUpdatePcmChart = True
     
     def _drawOnce(self, chart, yData, yRange=[0, 2000]):
         """

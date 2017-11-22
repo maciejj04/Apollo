@@ -16,7 +16,6 @@ class StaticAudio(Audio, MessageClient):
     def _setCurrentProcessedChunkNr(self, nr: int):
         self.currentLiveProcessedChunk = nr
     
-    
     def calculateChunks(self, rawData):
         chunkSize = Cai.getChunkSize()
         i = 0
