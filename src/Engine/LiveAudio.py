@@ -34,7 +34,7 @@ class LiveAudio(Audio):
             Recording.saveRecordedDataToFile(self.fullRawAudioData)
             return
         self.chunks.append(chunk)
-        np.append(self.fullRawAudioData, chunk.rawData)  # TODO: check whether it works fine
+        self.fullRawAudioData = np.append(self.fullRawAudioData, chunk.rawData)  # TODO: check whether it works fine
 
     def _setCurrentProcessedChunkNr(self, nr):
         self.currentLiveProcessedChunkNr = nr
