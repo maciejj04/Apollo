@@ -28,3 +28,15 @@ class Logger:
                     Cai.compName, Cai.updatesPerSecond, dateTime=str(datetime.now()))
         print(infoString)
         # TODO: save string to file.
+
+    @staticmethod
+    def interpretEngineLog(string: str):
+        prefix = " InterpretEngine Log: "
+        print(prefix + string)
+        Logger._writeLogToFile(string, prefix=prefix)
+        
+        
+    @staticmethod
+    def _writeLogToFile(string: str, prefix: str=""):
+        with open("../../logs/interpretLog.txt", "w") as text_file:
+            text_file.write(prefix + "; " + string)

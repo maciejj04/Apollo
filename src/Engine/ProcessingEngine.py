@@ -67,7 +67,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
 
 
         self.staticAudio = staticAudio
-        self.calculateStaticAudioParameters()
+        self._calculateStaticAudioParameters()
         self.liveAudios = []
         self.liveAudios.append(LiveAudio())
         self.currentLiveChunk: Chunk
@@ -77,15 +77,10 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
         self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
     
-    def getStaticAudioFrequencyEnvelope(self):
-        return self.staticAudioFrequencyEnvelope
-    
     def getFrequencyEnvelope(self):
         return self.calculateFrequencyEnvelope() if self.frequencyEnvelope is None else self.frequencyEnvelope
     
     def calculateFrequencyEnvelope(self, rawDataArray=None) -> []:
-        if rawDataArray is None:
-            rawDataArray = self.fullAudioData
         chunk = Cai.getChunkSize()
         freqs = []
         i = 0
@@ -231,7 +226,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
 
-    def calculateStaticAudioParameters(self):
+    def _calculateStaticAudioParameters(self):
         # clacualte from pulginsA
         self.staticAudioFrequencyEnvelope = self.calculateFrequencyEnvelope(self.staticAudio.rawData)
         

@@ -56,7 +56,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.processingEngine = ProcessingEngine(staticAudio=self.staticAudio)
 
         self.ear.stream.addObserver(self.processingEngine)
-        self.loopbackStreamHandler = OutputStream(StaticAudio(rawInputAudioData))
+        self.loopbackStreamHandler = OutputStream(staticAudio=self.staticAudio)
         
         # charts Initialization
         self.freqChartsWidget = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
@@ -71,7 +71,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         self.pcmsChart.plot(y=self.staticAudio.rawData, pen='r')
         #self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
-        self.fftsChart.plot(self.processingEngine.getStaticAudioFrequencyEnvelope(), pen='r')
+        self.fftsChart.plot(self.processingEngine.staticAudioFrequencyEnvelope, pen='r')
 
         self.ear.stream_start()  # TODO: Do I need this here?
         self.shouldUpdatePersonalFFTChart = False

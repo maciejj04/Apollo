@@ -1,15 +1,10 @@
-import struct
 import numpy as np
-from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
-from typing import Tuple
-# import scipy.fftpack as sf
+from src.Engine.Chunk import Chunk
 from .ProcessingEngine import ProcessingEngine
-
+from src.tools.Logger import Logger
 
 # class is a observer. Observes if new data comes in!
 class InterpretEngine:
-    _loadedFilePE: ProcessingEngine = None
-    _inputStreamPE: ProcessingEngine = None
     
     def __init__(self):
         pass
@@ -17,5 +12,9 @@ class InterpretEngine:
     def handleNewData(self):
         pass
     
-    def _getPCMDiffrences(self):
+    def getFFTsCorrelation(self, staticChunk: Chunk, liveChunk: Chunk):
         pass
+    
+    def measurePCMsCrossCorelation(self, staticChunk: Chunk, liveChunk: Chunk):
+        crossCorr = np.coorelate(staticChunk.rawData, liveChunk.rawData)
+        print(crossCorr)
