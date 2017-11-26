@@ -3,6 +3,7 @@ from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.helper_functions import my_range
 from typing import Tuple
 from src.Observer import Observer
+from src.Observable import Observable
 import numpy as np
 from src.Engine.Chunk import Chunk
 from collections import deque
@@ -29,13 +30,13 @@ from src.Engine.LiveAudio import LiveAudio
 #         return funcWrapper
 #     return tagDecorator
 
-class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
+class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable):
     """
         class can work in state-full or state-less mode(?)
         Real Time analysis possibilites:
             - TODO
     """
-    
+
     datax = None  # TODO: not used yet. For now datax is in Ear
     
     fullAudioData: np.ndarray = None
@@ -60,6 +61,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         :param data: data in np.array return format form
         """
         Observer.__init__(self)
+        Observable.__init__(self)
         MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
         MessageServer.registerForEvent(self, MsgTypes.RECORDING_STOP)
 
@@ -69,7 +71,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         self.staticAudio = staticAudio
         self._calculateStaticAudioParameters()
         self.liveAudios = []
-        self.liveAudios.append(LiveAudio())
         self.currentLiveChunk: Chunk
         
         
@@ -209,7 +210,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         return self.realTimeChunks[-1]
     
     def getCurrentRTChunkFreq(self):
-        return self.getCurrentLiveAudio().chunks[-1].chunkFreqs
+        return self.getCurrentLiveAudio().chunks[-1].chunkFreq
     
     def getCurrentRTChunkFFT(self):
         return self.getCurrentLiveAudio().chunks[-1].chunkFFT
@@ -237,4 +238,10 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         currentLiveAudio = self.getCurrentLiveAudio()
         currentLiveAudio.parameters["frequencyEnvelope"].append(freqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": freqInHertz})
+        self.notifyObservers(currentLiveAudio)
         #currentLiveAudio.parameters["PCMEnvelope"].append()
+        
+        
+    def notifyObservers(self, data):
+        for o in self.getObservers:
+            o.handleNewData(data)

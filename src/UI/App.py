@@ -16,6 +16,7 @@ from src.Engine.StaticAudio import StaticAudio
 from src.Engine.RecordingController import Recording
 from src.Engine.LiveAudio import LiveAudio
 from src.Engine.StaticAudio import StaticAudio
+from src.Engine.InterpretEngine import InterpretEngine
 
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
@@ -54,6 +55,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
 
         self.staticAudio = StaticAudio(rawData=rawInputAudioData)
         self.processingEngine = ProcessingEngine(staticAudio=self.staticAudio)
+        self.interpretEngine = InterpretEngine(staticAudioRef=self.staticAudio)
+        self.processingEngine.addObserver(self.interpretEngine)
 
         self.ear.stream.addObserver(self.processingEngine)
         self.loopbackStreamHandler = OutputStream(staticAudio=self.staticAudio)

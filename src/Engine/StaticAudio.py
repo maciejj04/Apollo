@@ -27,6 +27,3 @@ class StaticAudio(Audio, MessageClient):
         return {
             MsgTypes.NEW_CURRENT_CHUNK: self._setCurrentProcessedChunkNr(data)
         }[msgType]
-
-    def getChunk(self, nr: int):
-        return self.chunks[nr]

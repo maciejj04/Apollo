@@ -22,5 +22,5 @@ class Audio(abc.ABC):
     def getLastNChunks(self, n: int):
         return self.chunks[:-n]
     
-    def getFullAudioRawData(self):
-        pass
+    def getNChunks(self, startIndex: int, stopIndex: int):
+        return self.chunks[startIndex:stopIndex]
