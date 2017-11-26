@@ -11,6 +11,8 @@ from src.MessageClient import MessageClient
 from src.MessageServer import MessageServer, MsgTypes
 from src.Engine.StaticAudio import StaticAudio
 from src.Engine.LiveAudio import LiveAudio
+from src.Engine.Audio import Audio
+from src.tools.Logger import Logger
 
 # def checkParametersBeforeCall(func):
 #     def funcWrapper():
@@ -77,34 +79,18 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
         self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
         self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
-    
-    def getFrequencyEnvelope(self):
-        return self.calculateFrequencyEnvelope() if self.frequencyEnvelope is None else self.frequencyEnvelope
-    
-    def calculateFrequencyEnvelope(self, rawDataArray=None) -> []:
-        chunk = Cai.getChunkSize()
-        freqs = []
-        i = 0
-        for startFrame in my_range(0, Cai.numberOfFrames - chunk, chunk):
-            highestFreq = ProcessingEngine.findHighestFreqFromRawData(rawDataArray[startFrame:startFrame + chunk])
-            # highestFreq = engine.findHighestFreq(startFrame=startFrame, endFrame=startFrame+chunk)
-            print("{0}. Highest freq found in sample[{start}:{end}] = {1}".format(i, highestFreq, start=startFrame,
-                                                                                  end=startFrame + chunk))
-            freqs.append(highestFreq)
-            i += 1
         
-        self.frequencyEnvelope = freqs
-        return freqs
     
+    def calculateFrequencyEnvelopeForAudio(self, audio: Audio):
+        for c in audio.chunks:
+            freq = ProcessingEngine.findHighestFreqFromFFT(c.chunkFFT, c.chunkFreqs)
+            audio.frequencyEnvelope.append(freq)
+            Logger.info("{0}. ChunksFreq = {1}".format(c.chunkNr, freq))
+        
     def findHighestFreq(self, startFrame: int = 0, endFrame: int = Cai.numberOfFrames) -> int:
         """
         :return: highestFrequency in hertz
         """
-        # data = struct.unpack('{n}h'.format(n=Cia.numberOfFrames), data)
-        # data = np.array(data)
-        
-        # print("min, max freqs found = ({0},{1})".format(self.calculateMinMaxFrequencies(self.freqs)))
-        
         # Find the peak in the coefficients
         idx = np.argmax(np.abs(self.fft[startFrame:endFrame]))
         freq = self.fullAudioFreqs[startFrame + idx]
@@ -138,8 +124,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         freq_in_hertz = abs(freq)  # * Cai.frameRate)
         return freq_in_hertz
     
-    def calculatePCMEnvelope(self, data=None):  # obwiednia
-        pass
     
     # TODO: ......................
     # def maxFrequency(X, F_sample, Low_cutoff=80, High_cutoff=300):
@@ -228,8 +212,8 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         self.liveAudios.append(LiveAudio())
 
     def _calculateStaticAudioParameters(self):
-        # clacualte from pulginsA
-        self.staticAudioFrequencyEnvelope = self.calculateFrequencyEnvelope(self.staticAudio.rawData)
+        # clacualte from pulgins
+        self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
         
         
     def processChunkAndAppendToLiveData(self, chunk: Chunk):

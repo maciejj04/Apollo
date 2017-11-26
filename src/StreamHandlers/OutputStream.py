@@ -48,7 +48,7 @@ class OutputStream(Observer, MessageClient):
 
         # play only input audio when recording
         if self.isRecording:
-            staticAudioChunkRawData = self._staticAudio.getChunk(nr=self.currentChunkNr).rawData
+            staticAudioChunkRawData = self._staticAudio.chunks[self.currentChunkNr].rawData
             self._stream.write(staticAudioChunkRawData.tostring())
             self.currentChunkNr += 1
 

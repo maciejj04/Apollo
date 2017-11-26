@@ -13,7 +13,6 @@ class LiveAudio(Audio):
         
         self.fullRawAudioData = np.ones(0, dtype=Cai.sampleWidthNumpy)
         
-        self.frequencyEnvelope = []
         self.PCMEnvelope = []
         
         self.parameters = {
@@ -38,3 +37,6 @@ class LiveAudio(Audio):
 
     def _setCurrentProcessedChunkNr(self, nr):
         self.currentLiveProcessedChunkNr = nr
+    
+    def getLastChunk(self):
+        return len(self.chunks)

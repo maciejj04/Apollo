@@ -63,7 +63,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         # charts Initialization
         self.freqChartsWidget = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
-            "orgEnvelope": self.processingEngine.staticAudioFrequencyEnvelope,
+            "orgEnvelope": self.processingEngine.staticAudio.frequencyEnvelope,
             "liveFreqsEnvelope": []
         })
         self.pcmChartWidget = self._ChartWidget({"orgEnvelope": "r", "livePcmEnvelope": "b"}, yValues={
@@ -74,7 +74,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         self.pcmsChart.plot(y=self.staticAudio.rawData, pen='r')
         #self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
-        self.fftsChart.plot(self.processingEngine.staticAudioFrequencyEnvelope, pen='r')
+        self.fftsChart.plot(self.processingEngine.staticAudio.frequencyEnvelope, pen='r')
 
         self.ear.stream_start()  # TODO: Do I need this here?
         self.shouldUpdatePersonalFFTChart = False
@@ -132,12 +132,13 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
     def generateChooseFileDialog(self):
         filePath = QtGui.QFileDialog.getOpenFileName()
         # TODO: Set file as staticFile
-        self._drawOnce(
-            chart=self.fftsChart,
-            yData=self.processingEngine.calculateFrequencyEnvelope(),
-            #  (min, max) = self.liveProcessingEngine.calculateMinMaxFrequencies()
-            yRange=[0, 2000]
-        )
+        # TODO: update and re-draw StaticAudio
+        # self._drawOnce(
+        #     chart=self.fftsChart,
+        #     yData=self.processingEngine.calculateFrequencyEnvelopeFromRawData(),
+        #     #  (min, max) = self.liveProcessingEngine.calculateMinMaxFrequencies()
+        #     yRange=[0, 2000]
+        # )
     
     def startButtonAction(self):
         print('Action')
@@ -167,6 +168,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         for key, value in chartsFreqs.items():
             self.freqChartsWidget.yValuesDict[key].append(value)
             
+        self.HzLcd.display(chartsFreqs["liveFreqsEnvelope"])
         self.shouldUpdateFrequenciesChart = True
     
     def _updatePcmsChart(self):

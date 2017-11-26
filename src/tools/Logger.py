@@ -38,5 +38,7 @@ class Logger:
         
     @staticmethod
     def _writeLogToFile(string: str, prefix: str=""):
-        with open("../../logs/interpretLog.txt", "w") as text_file:
+        from configuration import LOGS_DIR
+        import os
+        with open(os.path.join(LOGS_DIR, "interpretLog.txt"), "w") as text_file:
             text_file.write(prefix + "; " + string)

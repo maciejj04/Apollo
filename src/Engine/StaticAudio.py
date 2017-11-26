@@ -12,17 +12,20 @@ class StaticAudio(Audio, MessageClient):
         Audio.__init__(self)
         self.rawData = rawData
         self.calculateChunks(rawData)
-        
+    
     def _setCurrentProcessedChunkNr(self, nr: int):
         self.currentLiveProcessedChunk = nr
     
     def calculateChunks(self, rawData):
         chunkSize = Cai.getChunkSize()
         i = 0
-        for chunkByte in range(0, rawData.size - chunkSize, chunkSize):
+        for chunkByte in range(0, rawData.size - chunkSize + 1, chunkSize):
             self.chunks.append(Chunk(rawData[chunkByte:chunkByte + chunkSize], i))  #
             i += 1
-
+        
+        if rawData.size % Cai.getChunkSize() != 0:
+            self.chunks.append(Chunk(rawData[i * chunkSize:], i))
+    
     def handleMessage(self, msgType, data):
         return {
             MsgTypes.NEW_CURRENT_CHUNK: self._setCurrentProcessedChunkNr(data)
