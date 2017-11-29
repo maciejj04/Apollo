@@ -119,12 +119,12 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             #TODO: corrent! For loop every chart !
             for key, value in self.freqChartsWidget.yValuesDict.items():
                 self.fftsChart.plot(x=self.freqChartsWidget.xValues, y=value, pen=self.freqChartsWidget.pens[key])
-
             self.shouldUpdateFrequenciesChart = False
 
         if self.shouldUpdatePcmChart:
             for key, value in self.pcmChartWidget.yValuesDict.items():
                 self.fftsChart.plot(x=self.pcmChartWidget.xValues, y=value, pen=self.pcmChartWidget.pens[key])
+            self.shouldUpdatePcmChart = False
 
 
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
@@ -141,7 +141,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         # )
     
     def startButtonAction(self):
-        print('Action')
+        print('StartAction')
     
     def showChooseMicrophoneDialog(self):
         """

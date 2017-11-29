@@ -39,4 +39,10 @@ class LiveAudio(Audio):
         self.currentLiveProcessedChunkNr = nr
     
     def getLastChunk(self):
+        return self.chunks[len(self.chunks)]
+
+    def getLastChunksIndex(self):
         return len(self.chunks)
+    
+    def getFrequencyEnvelope(self) -> []:
+        return self.parameters["frequencyEnvelope"]

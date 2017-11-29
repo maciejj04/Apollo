@@ -4,7 +4,6 @@ package "Commons" {
 [CommonAudioInfo]
 [InputDeviceInfo]
 [Settings]
-[First Component]
 }
 
 package "Engine" {
@@ -14,17 +13,17 @@ package "Engine" {
 [Converter]
 [Ear]
 }
-
+Engine -> Commons : uses
 
 package "StreamHandlers" {
     [Stream]
 }
-
+StreamHandlers -> Commons : uses
 package "UI" {
     [Stream]
     [OutputStream]
 }
 
-Engine -> Commons : uses
-StreamHandlers -> Commons : uses
+
+
 @enduml

@@ -1,10 +1,16 @@
 @startuml
 (*)  --> [PCM]"Stream"
-If "input is verbose" then
---> [Yes] "turn on verbosity"
---> "run command"
-else
---> "run command"
-Endif
--->(*)
+-->  "ProcessingEngine"
+--> [passes LiveAudio reference]"InterpretEngine"
+"Stream"-->"OutputStream"
+"OutputStream"-->(*)
+
+partition MessageServer #LightSkyBlue {
+  "Stream" --> "MessageServer"
+  "ProcessingEngine" --> "MessageServer"
+  "InterpretEngine" -->   [         ?       ]"MessageServer"
+}
+"MessageServer" --> "UI"
+"MessageServer" --> "ProcessingEngine"
+"MessageServer" --> "OutputStream"
 @enduml

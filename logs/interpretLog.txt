@@ -1,1 +1,5 @@
- InterpretEngine Log: ; [50] corr = 0.004660163968955667
+ InterpretEngine Log: ; [47] corr = 0.47448590530426504
+                        HzDiff = 20.0
+                        PerasonPCMCorr = 0.029559627075440836
+                        pearsonSpectrumCorr = 0.4689666280230327
+                        
