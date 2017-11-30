@@ -111,7 +111,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         # self._updatePcmsChart()
         if self.shouldUpdatePersonalFFTChart is True:
             self.personalFFTChart.plot(self.currentChunk.chunkFreqs,
-                                       self.currentChunk.chunkFFT / self.currentChunk.chunksMaxFreq,
+                                       self.currentChunk.chunkAS / self.currentChunk.chunksMaxFreq,
                                        pen='r', clear=True)
             self.shouldUpdatePersonalFFTChart = False
             
@@ -125,8 +125,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             for key, value in self.pcmChartWidget.yValuesDict.items():
                 self.fftsChart.plot(x=self.pcmChartWidget.xValues, y=value, pen=self.pcmChartWidget.pens[key])
             self.shouldUpdatePcmChart = False
-
-
+        
+        # import threading
+        # print("Active threads: %d" % threading.activeCount())
+        
         QtCore.QTimer.singleShot(1, self.update)  # QUICKLY repeat
     
     def generateChooseFileDialog(self):

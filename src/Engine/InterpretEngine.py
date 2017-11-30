@@ -4,12 +4,14 @@ from src.Observer import Observer
 from src.Engine.helpers.NewThreadExecutionAanotation import executeInNewThread
 from src.Engine.LiveAudio import LiveAudio
 from src.tools.Logger import Logger
-from  scipy import stats
+from scipy import stats
 from src.MessageServer import MessageServer
+
 '''
     NOTICE:
-      - accuracy of the coorelation can depend on the quality of the recording! E.g.: build-in mic = ~.95, Novox nc-1 = ~.99
+      - accuracy of the coorelation depend on the quality of the recording! E.g.: build-in mic = ~.95, Novox nc-1 = ~.99
 '''
+
 
 class InterpretEngine(Observer):
     def __init__(self, staticAudioRef):
@@ -22,7 +24,7 @@ class InterpretEngine(Observer):
         :return: void
         '''
         self.interpret(data)
-
+    
     @executeInNewThread
     def interpret(self, liveAudio: LiveAudio):
         chunksCorr = self.measureNormalizedCrossCorelationFromAudio(liveAudio)
@@ -30,16 +32,14 @@ class InterpretEngine(Observer):
         
         statChunk, liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
         pearsonPCMCorr = self.pearsonCorrelationCoefficient(statChunk.rawData, liveChunk.rawData)
-        pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(statChunk.chunkFFT, liveChunk.chunkFFT)
+        pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(statChunk.chunkAS, liveChunk.chunkAS)
         
         Logger.interpretEngineLog("""[{chunkNr}] corr = {corr}
                         HzDiff = {HzDiff}
                         PerasonPCMCorr = {pearsonPCMCorr}
                         pearsonSpectrumCorr = {pearsonSpectrumCorr}
-                        """
-                        .format(chunkNr=liveAudio.getLastChunksIndex()-1, corr=chunksCorr, HzDiff=hzDiff,
-                                pearsonPCMCorr=pearsonPCMCorr,pearsonSpectrumCorr=pearsonSpectrumCorr))
-        
+                        """.format(chunkNr=liveAudio.getLastChunksIndex() - 1, corr=chunksCorr, HzDiff=hzDiff,
+                                          pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr))
     
     # can be extracted as a plugin
     def measureNormalizedCrossCorelationFromAudio(self, liveAudio: LiveAudio):
@@ -47,13 +47,13 @@ class InterpretEngine(Observer):
             def corrDenominator(dataSet1, dataSet2):
                 def squareSum(dataSet):
                     return sum(e * e for e in dataSet)
-            
+                
                 return sqrt(squareSum(dataSet1) * squareSum(dataSet2))
-        
+            
             return (np.correlate(data1, data2) / corrDenominator(data1, data2))[0]
-     
+            
         staticChunk, liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
-        return measureNormalizedCrossCorelation(data1=staticChunk.chunkFFT, data2=liveChunk.chunkFFT)
+        return measureNormalizedCrossCorelation(data1=staticChunk.chunkAS, data2=liveChunk.chunkAS)
     
     def baseHzAbsoluteDifference(self, liveAudio: LiveAudio):
         currChunkNr = len(liveAudio.chunks) - 1
@@ -63,7 +63,7 @@ class InterpretEngine(Observer):
         return abs(staticHz - liveHz)
     
     def pearsonCorrelationCoefficient(self, dataSet1: np.ndarray, dataSet2: np.ndarray):
-        return stats.pearsonr(dataSet1, dataSet2)[0]
+        return stats.pearsonr(dataSet1, dataSet2)[0]  # TODO: evaluate second return-tuple element!
     
     def _getCurrentCorrespondingChunks(self, liveAudio: LiveAudio) -> ():
         currChunkNr = len(liveAudio.chunks) - 1

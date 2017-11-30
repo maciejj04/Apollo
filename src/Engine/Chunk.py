@@ -7,8 +7,8 @@ class Chunk:
     def __init__(self, rawData: np.ndarray, chunkNr=None):
         
         self.rawData = rawData
-        self.chunkFreqs, self.chunkFFT = BaseProcessingUtils.getFFT(self.rawData, Cai.frameRate)
+        self.chunkFreqs, self.chunkAS = BaseProcessingUtils.getAplitudeSpectrum(self.rawData, Cai.frameRate) #AS - AmplitudeSpectrum
         self.chunkNr = chunkNr  # TODO: delete(?)
 
-        self.chunksMinFreq = np.min(np.abs(self.chunkFFT))
-        self.chunksMaxFreq = np.max(np.abs(self.chunkFFT))
+        self.chunksMinFreq = np.min(np.abs(self.chunkAS))
+        self.chunksMaxFreq = np.max(np.abs(self.chunkAS))

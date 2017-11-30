@@ -23,7 +23,7 @@ class Logger:
                          - sampwidth {} (in bytes)
                          - comptype {}
                          - compname {}
-                         - updatesPerSecond {}""" \
+                         - updatesPerSecond {}\n""" \
             .format(Cai.getChunkSize(), Cai.frameRate, Cai.numberOfChannels, Cai.sampleWidthInBytes, Cai.compType,
                     Cai.compName, Cai.updatesPerSecond, dateTime=str(datetime.now()))
         print(infoString)
@@ -40,5 +40,5 @@ class Logger:
     def _writeLogToFile(string: str, prefix: str=""):
         from configuration import LOGS_DIR
         import os
-        with open(os.path.join(LOGS_DIR, "interpretLog.txt"), "w") as text_file:
+        with open(os.path.join(LOGS_DIR, "interpretLog.txt"), "a") as text_file:
             text_file.write(prefix + "; " + string)

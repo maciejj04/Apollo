@@ -44,7 +44,7 @@ class Stream(Observable):
         """reads some audio and re-launches itself"""
         try:
             self.data = np.fromstring(self._stream.read(Cai.getChunkSize()), dtype=np.int16)
-            self.notifyObservers()
+            self.notifyObservers(self.data)
             
             gc.collect()  # ?
         
@@ -64,6 +64,6 @@ class Stream(Observable):
         self.threadObject.start()
     
     #@executeInNewThread
-    def notifyObservers(self):
+    def notifyObservers(self, data):
         for o in self._observers:
-            o.handleNewData(self.data)
+            o.handleNewData(data)

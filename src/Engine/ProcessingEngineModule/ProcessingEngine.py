@@ -82,7 +82,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         """
         :return: highestFrequency in hertz
         """
-        freq, fft = BaseProcessingUtils.getFFT(data, Cai.frameRate)
+        freq, fft = BaseProcessingUtils.getAplitudeSpectrum(data, Cai.frameRate)
         return ProcessingEngine.findHighestFreqFromFFT(fft, freq)
     
     @staticmethod
@@ -161,7 +161,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         return self.recordChunks[-1].chunkFreqs
     
     def getCurrentChunkFFT(self):
-        return self.recordChunks[-1].chunkFFT
+        return self.recordChunks[-1].chunkAS
     
     def getCurrentRTChunk(self):
         return self.realTimeChunks[-1]
@@ -170,16 +170,16 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
         return self.getCurrentLiveAudio().chunks[-1].chunkFreqs
     
     def getCurrentRTChunkFFT(self):
-        return self.getCurrentLiveAudio().chunks[-1].chunkFFT
+        return self.getCurrentLiveAudio().chunks[-1].chunkAS
     
     def getChunksRawData(self, nr: int):
         return self.getCurrentLiveAudio().chunks[nr].rawData
     
     def getChunkFFT(self, nr: int):
-        return self.getCurrentLiveAudio().chunks[nr].chunkFFT
+        return self.getCurrentLiveAudio().chunks[nr].chunkAS
     
     def getCurrentChunksFrequencySpectrum(self):
-        return self.currentLiveChunk.chunkFFT
+        return self.currentLiveChunk.chunkAS
     
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
@@ -190,7 +190,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient):
     
     def processChunkAndAppendToLiveData(self, chunk: Chunk):
         # TODO: should load plugin analysis
-        freqInHertz = ProcessingEngine.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
+        freqInHertz = ProcessingEngine.findHighestFreqFromFFT(fftData=chunk.chunkAS, freqs=chunk.chunkFreqs)
         currentLiveAudio = self.getCurrentLiveAudio()
         currentLiveAudio.parameters["frequencyEnvelope"].append(freqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": freqInHertz})

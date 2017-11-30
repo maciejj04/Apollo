@@ -38,23 +38,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         Real Time analysis possibilites:
             - TODO
     """
-
-    datax = None  # TODO: not used yet. For now datax is in Ear
-    
-    fullAudioData: np.ndarray = None
-    fullAudioFFT: np.ndarray = None
-    fullAudioFreqs: np.ndarray = None
-    frequencyEnvelope: list = None
-    PCMEnvelope: np.ndarray = None
-    
-    minFrequency: int = None
-    maxFrequency: int = None
-    
-    recordChunks: list = []
-    realTimeChunks: deque = None  # deque(maxlen=Cai.numberOfFrames)
-    realTimeFrequencyEnvelope: deque = None  # deque(maxlen=Cai.numberOfFrames)
-    realTimePCMEnvelope: deque = None  # deque(maxlen=Cai.numberOfFrames)
-    
     currentChunkNr: int = -1
     recording = False
     
@@ -74,57 +57,43 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         self._calculateStaticAudioParameters()
         self.liveAudios = []
         self.currentLiveChunk: Chunk
-        
-        
-        self.realTimeChunks = deque(maxlen=Cai.numberOfFrames)
-        self.realTimeFrequencyEnvelope = deque(maxlen=Cai.numberOfFrames)
-        self.realTimePCMEnvelope = deque(maxlen=Cai.numberOfFrames)
-        
     
     def calculateFrequencyEnvelopeForAudio(self, audio: Audio):
         for c in audio.chunks:
-            freq = ProcessingEngine.findHighestFreqFromFFT(c.chunkFFT, c.chunkFreqs)
+            freq = ProcessingEngine.findLoudestFreqFromFFT(c.chunkAS, c.chunkFreqs)
             audio.frequencyEnvelope.append(freq)
             Logger.info("{0}. ChunksFreq = {1}".format(c.chunkNr, freq))
-        
-    def findHighestFreq(self, startFrame: int = 0, endFrame: int = Cai.numberOfFrames) -> int:
-        """
-        :return: highestFrequency in hertz
-        """
-        # Find the peak in the coefficients
-        idx = np.argmax(np.abs(self.fft[startFrame:endFrame]))
-        freq = self.fullAudioFreqs[startFrame + idx]
-        freq_in_hertz = abs(freq * Cai.frameRate)
-        return freq_in_hertz
-    
-    def calculateMinMaxFrequencies(self, freqs: np.ndarray = None) -> Tuple[int, int]:
-        """
-        :param freqs: data after fft->fftfreq (numpy)
-        :return: tuple with (minFreq, maxFreq)
-        """
-        if freqs is None:
-            freqs = self.fullAudioFreqs
-        return abs(freqs.min() * Cai.frameRate), abs(freqs.max() * Cai.frameRate)
-    
+            
     @staticmethod
     def findHighestFreqFromRawData(data: np.ndarray) -> int:
         """
         :return: highestFrequency in hertz
         """
-        freq, fft = BaseProcessingUtils.getFFT(data, Cai.frameRate)
-        return ProcessingEngine.findHighestFreqFromFFT(fft, freq)
+        freq, fft = BaseProcessingUtils.getAplitudeSpectrum(data, Cai.frameRate)
+        return ProcessingEngine.findLoudestFreqFromFFT(fft, freq)
     
     @staticmethod
-    def findHighestFreqFromFFT(fftData: np.ndarray, freqs=None) -> int:
+    def findLoudestFreqFromFFT(SAData: np.ndarray, freqs=None) -> int:
         if freqs is None:
-            freqs = np.fft.fftfreq(len(fftData))
+            freqs = np.fft.fftfreq(len(SAData))
         
-        idx = np.argmax(np.abs(fftData))
+        idx = np.argmax(np.abs(SAData))  # TODO: FFT from chunk is already absolute!
         freq = freqs[idx]
         freq_in_hertz = abs(freq)  # * Cai.frameRate)
         return freq_in_hertz
-    
-    
+
+    # @staticmethod
+    # def findNLoudestFreqsFromFFT(spectrum: np.ndarray, freqs, n) -> int:
+    #
+    #     values = np.argsort(spectrum)[-n]
+    #     freqsInHertz = np.array([], dtype=np.int16)
+    #
+    #     for v in values.tolist():
+    #         freqsInHertz = np.append(freqsInHertz, abs(v))  # * Cai.frameRate)
+    #     return freqsInHertz
+
+
+
     # TODO: ......................
     # def maxFrequency(X, F_sample, Low_cutoff=80, High_cutoff=300):
     #     """ Searching presence of frequencies on a real signal using FFT
@@ -188,7 +157,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         return self.recordChunks[-1].chunkFreqs
     
     def getCurrentChunkFFT(self):
-        return self.recordChunks[-1].chunkFFT
+        return self.recordChunks[-1].chunkAS
     
     def getCurrentRTChunk(self):
         return self.realTimeChunks[-1]
@@ -197,16 +166,16 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         return self.getCurrentLiveAudio().chunks[-1].chunkFreq
     
     def getCurrentRTChunkFFT(self):
-        return self.getCurrentLiveAudio().chunks[-1].chunkFFT
+        return self.getCurrentLiveAudio().chunks[-1].chunkAS
 
     def getChunksRawData(self, nr: int):
         return self.getCurrentLiveAudio().chunks[nr].rawData
     
     def getChunkFFT(self, nr: int):
-        return self.getCurrentLiveAudio().chunks[nr].chunkFFT
+        return self.getCurrentLiveAudio().chunks[nr].chunkAS
 
     def getCurrentChunksFrequencySpectrum(self):
-        return self.currentLiveChunk.chunkFFT
+        return self.currentLiveChunk.chunkAS
 
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
@@ -218,12 +187,31 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         
     def processChunkAndAppendToLiveData(self, chunk: Chunk):
         # TODO: should load plugin analysis
-        freqInHertz = ProcessingEngine.findHighestFreqFromFFT(fftData=chunk.chunkFFT, freqs=chunk.chunkFreqs)
+        freqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
+
+        # nLoudest = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs, n=3)
+        # print("N Loudest freqs")
+        # for i in nLoudest.tolist():
+        #     print("%d, " %i)
+        
         currentLiveAudio = self.getCurrentLiveAudio()
         currentLiveAudio.parameters["frequencyEnvelope"].append(freqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": freqInHertz})
         self.notifyObservers(currentLiveAudio)
         #currentLiveAudio.parameters["PCMEnvelope"].append()
+        
+    # !! Only Offline for now!
+    # def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
+    #
+    #     windowWidth = Cai.getChunkSize()  # depends on computer resources. For now it's 4410/10=441
+    #     step = Cai.getChunkSize()/10 # depends on computer resources. For now it's 4410/10=441
+    #     # Takes
+    #     for index in range(0, staticAudioRawData.size)
+    #
+    #     #Iterates over rawData by windowWidth and calculates coorelation.
+    #     for elementNr in range(0, staticAudioRawData.size, windowWidth):
+        
+        
         
         
     def notifyObservers(self, data):
