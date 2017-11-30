@@ -10,3 +10,4 @@ src/__pycache__/
 src/Commons/__pycache__/
 src/Engine/__pycache__/
 src/StreamHandlers/__pycache__/
+!resources/simpleWhistle.wav
