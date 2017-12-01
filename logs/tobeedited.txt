@@ -1,50 +1,245 @@
- InterpretEngine Log: [1] corr = 0.08626272220235481
- InterpretEngine Log: [2] corr = 0.06116141453145792
- InterpretEngine Log: [3] corr = 0.07249201707862675
- InterpretEngine Log: [4] corr = 0.10153609675413366
- InterpretEngine Log: [5] corr = 0.5195359210738785
- InterpretEngine Log: [6] corr = 0.37340508625055463
- InterpretEngine Log: [7] corr = 0.30314214624833324
- InterpretEngine Log: [8] corr = 0.2613049961889187
- InterpretEngine Log: [9] corr = 0.7948180679640084
- InterpretEngine Log: [10] corr = 0.4686371067121075
- InterpretEngine Log: [11] corr = 0.24915178966814122
- InterpretEngine Log: [12] corr = 0.2652489396859651
- InterpretEngine Log: [13] corr = 0.4525338251946275
- InterpretEngine Log: [14] corr = 0.28760046305821924
- InterpretEngine Log: [15] corr = 0.26685886757177113
- InterpretEngine Log: [16] corr = 0.162120248380971
- InterpretEngine Log: [17] corr = 0.3291382918397743
- InterpretEngine Log: [18] corr = 0.1688754747490288
- InterpretEngine Log: [19] corr = 0.9266389401074447
- InterpretEngine Log: [20] corr = 0.40508513292569837
- InterpretEngine Log: [21] corr = 0.5090868409547796
- InterpretEngine Log: [22] corr = 0.9673138771699167
- InterpretEngine Log: [23] corr = 0.42306780346345413
- InterpretEngine Log: [24] corr = 0.27784593281086384
- InterpretEngine Log: [25] corr = 0.6653278265849925
- InterpretEngine Log: [26] corr = 0.831433115093116
- InterpretEngine Log: [27] corr = 0.48420542604743316
- InterpretEngine Log: [28] corr = 0.9366362336661826
- InterpretEngine Log: [29] corr = 0.9934018178737727
- InterpretEngine Log: [30] corr = 0.8979460638966626
- InterpretEngine Log: [31] corr = 0.38985654292518623
- InterpretEngine Log: [32] corr = 0.26779627199167466
- InterpretEngine Log: [33] corr = 0.4777548868324051
- InterpretEngine Log: [34] corr = 0.27426632804489404
- InterpretEngine Log: [35] corr = 0.8769482642961304
- InterpretEngine Log: [36] corr = 0.8572690361756562
- InterpretEngine Log: [37] corr = 0.5670292215493242
- InterpretEngine Log: [38] corr = 0.8156346511795337
- InterpretEngine Log: [39] corr = 0.7469056044001926
- InterpretEngine Log: [40] corr = 0.9135309921457602
- InterpretEngine Log: [41] corr = 0.6140647237037377
- InterpretEngine Log: [42] corr = 0.9001241996311224
- InterpretEngine Log: [43] corr = 0.6793591714102418
- InterpretEngine Log: [44] corr = 0.8302279381328141
- InterpretEngine Log: [45] corr = 0.9600478528323834
- InterpretEngine Log: [46] corr = 0.4729103297509689
- InterpretEngine Log: [47] corr = 0.422202071623303
- InterpretEngine Log: [48] corr = 0.5947828736561187
- InterpretEngine Log: [49] corr = 0.81656978319181
- InterpretEngine Log: [50] corr = 0.004660163968955667
+ InterpretEngine Log: [0] corr = 0.49122702774653965
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.11239256371808432
+                        pearsonSpectrumCorr = 0.4959585571361209
+                        
+ InterpretEngine Log: [1] corr = 0.8285875151107982
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.15181562862181497
+                        pearsonSpectrumCorr = 0.8161112224044844
+                        
+ InterpretEngine Log: [2] corr = 0.7562974063647759
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.07510937324569454
+                        pearsonSpectrumCorr = 0.757709502871846
+                        
+ InterpretEngine Log: [3] corr = 0.5989270546183144
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.14119471178138024
+                        pearsonSpectrumCorr = 0.5780128533618071
+                        
+ InterpretEngine Log: [4] corr = 0.3397706259426876
+                        HzDiff = 1170.0
+                        PerasonPCMCorr = -0.060469066613492335
+                        pearsonSpectrumCorr = 0.31509431216284145
+                        
+ InterpretEngine Log: [5] corr = 0.05180359433598979
+                        HzDiff = 1190.0
+                        PerasonPCMCorr = 0.010454364754859278
+                        pearsonSpectrumCorr = 0.03938722200204763
+                        
+ InterpretEngine Log: [6] corr = 0.28127123442895435
+                        HzDiff = 80.0
+                        PerasonPCMCorr = -0.05170986597132083
+                        pearsonSpectrumCorr = 0.2659395819285995
+                        
+ InterpretEngine Log: [7] corr = 0.053754158225736696
+                        HzDiff = 70.0
+                        PerasonPCMCorr = 0.0021686325691792903
+                        pearsonSpectrumCorr = 0.049515573371783306
+                        
+ InterpretEngine Log: [8] corr = 0.14945144627199053
+                        HzDiff = 40.0
+                        PerasonPCMCorr = 0.0347906270479359
+                        pearsonSpectrumCorr = 0.14322011033961035
+                        
+ InterpretEngine Log: [9] corr = 0.15196323971604736
+                        HzDiff = 80.0
+                        PerasonPCMCorr = -0.02227375605361178
+                        pearsonSpectrumCorr = 0.14248813865587018
+                        
+ InterpretEngine Log: [10] corr = 0.12161121674471505
+                        HzDiff = 90.0
+                        PerasonPCMCorr = 0.018354536188477755
+                        pearsonSpectrumCorr = 0.11249426282683299
+                        
+ InterpretEngine Log: [11] corr = 0.06410181185603825
+                        HzDiff = 100.0
+                        PerasonPCMCorr = -0.033316630792396225
+                        pearsonSpectrumCorr = 0.058464268775420165
+                        
+ InterpretEngine Log: [12] corr = 0.16570804863346597
+                        HzDiff = 80.0
+                        PerasonPCMCorr = 0.024834815493290537
+                        pearsonSpectrumCorr = 0.15688888186536368
+                        
+ InterpretEngine Log: [13] corr = 0.10705514778329156
+                        HzDiff = 80.0
+                        PerasonPCMCorr = -0.011116262979502647
+                        pearsonSpectrumCorr = 0.1007271981426933
+                        
+ InterpretEngine Log: [14] corr = 0.11337000712367294
+                        HzDiff = 60.0
+                        PerasonPCMCorr = 0.057262546382130575
+                        pearsonSpectrumCorr = 0.1084834352381249
+                        
+ InterpretEngine Log: [15] corr = 0.08312265838964653
+                        HzDiff = 30.0
+                        PerasonPCMCorr = 0.006516250247774002
+                        pearsonSpectrumCorr = 0.08025142856053948
+                        
+ InterpretEngine Log: [16] corr = 0.26164310606251256
+                        HzDiff = 20.0
+                        PerasonPCMCorr = -0.03464106642469609
+                        pearsonSpectrumCorr = 0.2569650796636594
+                        
+ InterpretEngine Log: [17] corr = 0.22165356094617072
+                        HzDiff = 20.0
+                        PerasonPCMCorr = -0.18563038625449266
+                        pearsonSpectrumCorr = 0.21843261709376113
+                        
+ InterpretEngine Log: [18] corr = 0.2276211031389785
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.17511311570910024
+                        pearsonSpectrumCorr = 0.22458225824752417
+                        
+ InterpretEngine Log: [19] corr = 0.2975270325577389
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.049279149295395466
+                        pearsonSpectrumCorr = 0.2944968532919376
+                        
+ InterpretEngine Log: [20] corr = 0.2865418645533139
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.11163254071523324
+                        pearsonSpectrumCorr = 0.28345443037456586
+                        
+ InterpretEngine Log: [21] corr = 0.5990806296463386
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.003244063618162349
+                        pearsonSpectrumCorr = 0.5954556489242098
+                        
+ InterpretEngine Log: [22] corr = 0.715148411211885
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.545389297500719
+                        pearsonSpectrumCorr = 0.7132094087073435
+                        
+ InterpretEngine Log: [23] corr = 0.9756091592784709
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.6719582778972294
+                        pearsonSpectrumCorr = 0.9754894762879145
+                        
+ InterpretEngine Log: [24] corr = 0.9731009664716864
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.05616404686507026
+                        pearsonSpectrumCorr = 0.9730996195328359
+                        
+ InterpretEngine Log: [25] corr = 0.9297658288198599
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.6848013976994295
+                        pearsonSpectrumCorr = 0.9289174487751989
+                        
+ InterpretEngine Log: [26] corr = 0.982550770517
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.7522092396589644
+                        pearsonSpectrumCorr = 0.982481949783683
+                        
+ InterpretEngine Log: [27] corr = 0.8925066025833135
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.3570404256002349
+                        pearsonSpectrumCorr = 0.8941585479359259
+                        
+ InterpretEngine Log: [28] corr = 0.7397697569482112
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.04327517780438538
+                        pearsonSpectrumCorr = 0.7361772763709288
+                        
+ InterpretEngine Log: [29] corr = 0.9447190344488182
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.1311816262231519
+                        pearsonSpectrumCorr = 0.9443244993737928
+                        
+ InterpretEngine Log: [30] corr = 0.4335255947291837
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.2870517903430892
+                        pearsonSpectrumCorr = 0.43148625584279166
+                        
+ InterpretEngine Log: [31] corr = 0.2554949275532091
+                        HzDiff = 20.0
+                        PerasonPCMCorr = 0.013272237327754299
+                        pearsonSpectrumCorr = 0.2506337146853855
+                        
+ InterpretEngine Log: [32] corr = 0.9010047695262147
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.2604749361329752
+                        pearsonSpectrumCorr = 0.8996988491995955
+                        
+ InterpretEngine Log: [33] corr = 0.4964637540334173
+                        HzDiff = 20.0
+                        PerasonPCMCorr = 0.26649955547613796
+                        pearsonSpectrumCorr = 0.490862028034221
+                        
+ InterpretEngine Log: [34] corr = 0.8529772343595944
+                        HzDiff = 0.0
+                        PerasonPCMCorr = 0.21512627562906983
+                        pearsonSpectrumCorr = 0.8506627780202228
+                        
+ InterpretEngine Log: [35] corr = 0.9434735432656486
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.7962589064575711
+                        pearsonSpectrumCorr = 0.9432197911591023
+                        
+ InterpretEngine Log: [36] corr = 0.7426210454864065
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.03928306099926478
+                        pearsonSpectrumCorr = 0.7391478415693179
+                        
+ InterpretEngine Log: [37] corr = 0.660615434019965
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.570365307603577
+                        pearsonSpectrumCorr = 0.6584257980101824
+                        
+ InterpretEngine Log: [38] corr = 0.9687454983784298
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.8497552246062925
+                        pearsonSpectrumCorr = 0.9684529500120945
+                        
+ InterpretEngine Log: [39] corr = 0.3994519164580446
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.0879141172767073
+                        pearsonSpectrumCorr = 0.39585188596132714
+                        
+ InterpretEngine Log: [40] corr = 0.6795609361992837
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.3741568701623839
+                        pearsonSpectrumCorr = 0.67754328539762
+                        
+ InterpretEngine Log: [41] corr = 0.780066508189296
+                        HzDiff = 20.0
+                        PerasonPCMCorr = -0.28017186681935524
+                        pearsonSpectrumCorr = 0.77773545138122
+                        
+ InterpretEngine Log: [42] corr = 0.45196766841433167
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.12763160277366978
+                        pearsonSpectrumCorr = 0.44839412382623345
+                        
+ InterpretEngine Log: [43] corr = 0.96841317267149
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.22994632975123602
+                        pearsonSpectrumCorr = 0.9693149710187416
+                        
+ InterpretEngine Log: [44] corr = 0.8875786848619385
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.44789400419343234
+                        pearsonSpectrumCorr = 0.8866922555446544
+                        
+ InterpretEngine Log: [45] corr = 0.7066427599778966
+                        HzDiff = 10.0
+                        PerasonPCMCorr = 0.09935080121927846
+                        pearsonSpectrumCorr = 0.7037960229947062
+                        
+ InterpretEngine Log: [46] corr = 0.8194499937255216
+                        HzDiff = 0.0
+                        PerasonPCMCorr = -0.16974668969732723
+                        pearsonSpectrumCorr = 0.8178686726738169
+                        
+ InterpretEngine Log: [47] corr = 0.709678650268911
+                        HzDiff = 10.0
+                        PerasonPCMCorr = -0.07234855742817271
+                        pearsonSpectrumCorr = 0.7074771530124686
+                        
+ InterpretEngine Log: [48] corr = 0.5984698343012028
+                        HzDiff = 40.0
+                        PerasonPCMCorr = -0.17388292122173016
+                        pearsonSpectrumCorr = 0.5930502020052904
+                        

@@ -27,6 +27,8 @@ class InterpretEngine(Observer):
     
     @executeInNewThread
     def interpret(self, liveAudio: LiveAudio):
+        self.staticChunk, self.liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
+
         chunksCorr = self.measureNormalizedCrossCorelationFromAudio(liveAudio)
         hzDiff = self.baseHzAbsoluteDifference(liveAudio)
         
@@ -40,6 +42,8 @@ class InterpretEngine(Observer):
                         pearsonSpectrumCorr = {pearsonSpectrumCorr}
                         """.format(chunkNr=liveAudio.getLastChunksIndex() - 1, corr=chunksCorr, HzDiff=hzDiff,
                                           pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr))
+
+        self.compareSpectrumCentroid()
     
     # can be extracted as a plugin
     def measureNormalizedCrossCorelationFromAudio(self, liveAudio: LiveAudio):
@@ -70,3 +74,7 @@ class InterpretEngine(Observer):
         liveChunk = liveAudio.chunks[currChunkNr]
         statChunk = self.staticAudio.chunks[currChunkNr]
         return statChunk, liveChunk
+    
+    def compareSpectrumCentroid(self):
+        diff = abs(self.staticChunk.spectralCentroid - self.liveChunk.spectralCentroid)
+        Logger.centroidLog("StatCentroid={}\tliveCentroid={}\tdiff={}".format(self.staticChunk.spectralCentroid, self.liveChunk.spectralCentroid, diff))

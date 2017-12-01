@@ -37,8 +37,13 @@ class Logger:
         
         
     @staticmethod
-    def _writeLogToFile(string: str, prefix: str=""):
+    def _writeLogToFile(string: str, prefix: str="", filePath="interpretLog.txt"):
         from configuration import LOGS_DIR
         import os
-        with open(os.path.join(LOGS_DIR, "interpretLog.txt"), "a") as text_file:
+        with open(os.path.join(LOGS_DIR, filePath), "a") as text_file:
             text_file.write(prefix + "; " + string)
+            
+    @staticmethod
+    def centroidLog(string: str):
+        print(string)
+        Logger._writeLogToFile(string=string, filePath="centroidLog.txt")

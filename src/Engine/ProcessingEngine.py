@@ -14,45 +14,18 @@ from src.Engine.LiveAudio import LiveAudio
 from src.Engine.Audio import Audio
 from src.tools.Logger import Logger
 
-# def checkParametersBeforeCall(func):
-#     def funcWrapper():
-# from functools import wraps
-
-# def checkClassVariable(*classVars):
-#     for v in classVars:
-#         if v is None:
-#             return
-#
-#     def tagDecorator(func):
-#         @wraps(func)
-#         def funcWrapper(*args):
-#             if args is not None:
-#                 func(*args)
-#
-#         return funcWrapper
-#     return tagDecorator
 
 class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable):
-    """
-        class can work in state-full or state-less mode(?)
-        Real Time analysis possibilites:
-            - TODO
-    """
     currentChunkNr: int = -1
-    recording = False
     
     def __init__(self, staticAudio: StaticAudio):
-        """
-        :param data: data in np.array return format form
-        """
         Observer.__init__(self)
         Observable.__init__(self)
         MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
         MessageServer.registerForEvent(self, MsgTypes.RECORDING_STOP)
-
+        
         self.shouldSave = False
-
-
+        
         self.staticAudio = staticAudio
         self._calculateStaticAudioParameters()
         self.liveAudios = []
@@ -63,14 +36,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
             freq = ProcessingEngine.findLoudestFreqFromFFT(c.chunkAS, c.chunkFreqs)
             audio.frequencyEnvelope.append(freq)
             Logger.info("{0}. ChunksFreq = {1}".format(c.chunkNr, freq))
-            
-    @staticmethod
-    def findHighestFreqFromRawData(data: np.ndarray) -> int:
-        """
-        :return: highestFrequency in hertz
-        """
-        freq, fft = BaseProcessingUtils.getAplitudeSpectrum(data, Cai.frameRate)
-        return ProcessingEngine.findLoudestFreqFromFFT(fft, freq)
     
     @staticmethod
     def findLoudestFreqFromFFT(SAData: np.ndarray, freqs=None) -> int:
@@ -81,125 +46,61 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         freq = freqs[idx]
         freq_in_hertz = abs(freq)  # * Cai.frameRate)
         return freq_in_hertz
-
-    # @staticmethod
-    # def findNLoudestFreqsFromFFT(spectrum: np.ndarray, freqs, n) -> int:
-    #
-    #     values = np.argsort(spectrum)[-n]
-    #     freqsInHertz = np.array([], dtype=np.int16)
-    #
-    #     for v in values.tolist():
-    #         freqsInHertz = np.append(freqsInHertz, abs(v))  # * Cai.frameRate)
-    #     return freqsInHertz
-
-
-
-    # TODO: ......................
-    # def maxFrequency(X, F_sample, Low_cutoff=80, High_cutoff=300):
-    #     """ Searching presence of frequencies on a real signal using FFT
-    #     Inputs
-    #     =======
-    #     X: 1-D numpy array, the real time domain audio signal (single channel time series)
-    #     Low_cutoff: float, frequency components below this frequency will not pass the filter (physical frequency in unit of Hz)
-    #     High_cutoff: float, frequency components above this frequency will not pass the filter (physical frequency in unit of Hz)
-    #     F_sample: float, the sampling frequency of the signal (physical frequency in unit of Hz)
-    #     """
-    #
-    #     M = X.size  # let M be the length of the time series
-    #     Spectrum = sf.rfft(X, n=M)
-    #     [Low_cutoff, High_cutoff, F_sample] = map(float, [Low_cutoff, High_cutoff, F_sample])
-    #
-    #     # Convert cutoff frequencies into points on spectrum
-    #     [Low_point, High_point] = map(lambda F: F / F_sample * M, [Low_cutoff, High_cutoff])
-    #
-    #     maximumFrequency = np.where(
-    #         Spectrum == np.max(Spectrum[Low_point: High_point]))  # Calculating which frequency has max power.
-    #
-    #     return maximumFrequency
     
-    
-    # Used by observer pattern!
-    
-    def handleNewData(self, data):
-        self.currentChunkNr += 1
-        chunk = Chunk(data, self.currentChunkNr)
-        self.currentLiveChunk = chunk
-        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQ_SPECTR_CHART, chunk)
+    @staticmethod
+    def findNLoudestFreqsFromFFT(spectrum: np.ndarray, freqs, n) -> int:
         
-        if self.shouldSave:
-            self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
-            self.processChunkAndAppendToLiveData(chunk)
-            #print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
-    
-    # MessageClient
-    def handleMessage(self, msgType, data):
-
-        if msgType == MsgTypes.NEW_RECORDING:
-            self.setupNewLiveRecording()
-            self.shouldSave = True
-            return
-        elif msgType == MsgTypes.RECORDING_PAUSE:
-            raise NotImplementedError()
-        elif msgType == MsgTypes.RECORDING_STOP:
-            self.shouldSave = False
-        else:
-            raise Exception("Wrong msgType!! Check impl of MessageService for errors!")
+        maxValuesIndexes = np.argsort(spectrum)[-n:]
+        freqsInHertz = np.array([], dtype=np.float64)
         
-    # ______________________________________________________________________
+        for i in np.nditer(maxValuesIndexes):
+            freqsInHertz = np.append(freqsInHertz, abs(freqs[i]))  # * Cai.frameRate)
+        return freqsInHertz
     
+    @staticmethod
+    def calculateSpectralCentroid(AmpSpectr: np.ndarray, freqs: np.ndarray):
+        """
+        Calculates spectral centroid as pointed in https://en.wikipedia.org/wiki/Spectral_centroid
+        and
+        https://dsp.stackexchange.com/questions/27499/finding-the-right-measure-to-compare-sound-signals-in-the-frequency-domain/27533#27533
+        """
+        maxValIndex = np.max(AmpSpectr)
+        normalizedAmpSpecrt = AmpSpectr / maxValIndex  # delete it :'D
+        
+        sum = 0
+        discriminator = 0
+        for i in range(0, len(normalizedAmpSpecrt)):
+            sum += normalizedAmpSpecrt[i] * freqs[i]
+            discriminator += normalizedAmpSpecrt[i]
+        
+        res = sum / discriminator
+        # test=sum/(discriminator*100)
+        #  print("Spectrum centroid: {}".format(res))
+        return res
+        
     def getCurrentLiveAudio(self) -> LiveAudio:
         return self.liveAudios[-1]
     
-    def getCurrentChunk(self):
-        return self.getCurrentLiveAudio().getCurrentLiveProcessedChunk()
-    
-    def getCurrentChunkFreq(self):
-        return self.recordChunks[-1].chunkFreqs
-    
-    def getCurrentChunkFFT(self):
-        return self.recordChunks[-1].chunkAS
-    
-    def getCurrentRTChunk(self):
-        return self.realTimeChunks[-1]
-    
-    def getCurrentRTChunkFreq(self):
-        return self.getCurrentLiveAudio().chunks[-1].chunkFreq
-    
-    def getCurrentRTChunkFFT(self):
-        return self.getCurrentLiveAudio().chunks[-1].chunkAS
-
-    def getChunksRawData(self, nr: int):
-        return self.getCurrentLiveAudio().chunks[nr].rawData
-    
-    def getChunkFFT(self, nr: int):
-        return self.getCurrentLiveAudio().chunks[nr].chunkAS
-
-    def getCurrentChunksFrequencySpectrum(self):
-        return self.currentLiveChunk.chunkAS
-
-    def setupNewLiveRecording(self):
-        self.liveAudios.append(LiveAudio())
-
     def _calculateStaticAudioParameters(self):
         # clacualte from pulgins
         self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
-        
-        
+    
     def processChunkAndAppendToLiveData(self, chunk: Chunk):
         # TODO: should load plugin analysis
-        freqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
-
-        # nLoudest = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs, n=3)
-        # print("N Loudest freqs")
-        # for i in nLoudest.tolist():
-        #     print("%d, " %i)
+        loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
+        nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs,
+                                                                         n=3)
         
         currentLiveAudio = self.getCurrentLiveAudio()
-        currentLiveAudio.parameters["frequencyEnvelope"].append(freqInHertz)
-        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": freqInHertz})
+        currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": loudestFreqInHertz})
         self.notifyObservers(currentLiveAudio)
-        #currentLiveAudio.parameters["PCMEnvelope"].append()
-        
+        # currentLiveAudio.parameters["PCMEnvelope"].append()
+    
+    def setupNewLiveRecording(self):
+        self.liveAudios.append(LiveAudio())
+
+    
     # !! Only Offline for now!
     # def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
     #
@@ -210,10 +111,33 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     #
     #     #Iterates over rawData by windowWidth and calculates coorelation.
     #     for elementNr in range(0, staticAudioRawData.size, windowWidth):
-        
-        
-        
-        
+    # __________________________________________________________________________________________
+
+    # Used by observer pattern!
+    def handleNewData(self, data):
+        self.currentChunkNr += 1
+        chunk = Chunk(data, self.currentChunkNr)
+        self.currentLiveChunk = chunk
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQ_SPECTR_CHART, chunk)
+
+        if self.shouldSave:
+            self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
+            self.processChunkAndAppendToLiveData(chunk)
+            # print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
+
+    # MessageClient
+    def handleMessage(self, msgType, data):
+        if msgType == MsgTypes.NEW_RECORDING:
+            self.setupNewLiveRecording()
+            self.shouldSave = True
+            return
+        elif msgType == MsgTypes.RECORDING_PAUSE:
+            raise NotImplementedError()
+        elif msgType == MsgTypes.RECORDING_STOP:
+            self.shouldSave = False
+        else:
+            raise Exception("Wrong msgType!! Check impl of MessageService for errors!")
+    
     def notifyObservers(self, data):
         for o in self.getObservers:
             o.handleNewData(data)
