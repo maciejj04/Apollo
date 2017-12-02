@@ -17,7 +17,7 @@ from src.Engine.RecordingController import Recording
 from src.Engine.LiveAudio import LiveAudio
 from src.Engine.StaticAudio import StaticAudio
 from src.Engine.InterpretEngine import InterpretEngine
-
+from src.Commons.Settings import TOP_FREQS_COUNT
 
 class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
     class _ChartWidget:
@@ -62,9 +62,12 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.loopbackStreamHandler = OutputStream(staticAudio=self.staticAudio)
         
         # charts Initialization
+        liveFreqsEnvelopes = []
+        for i in range(0, TOP_FREQS_COUNT):
+            liveFreqsEnvelopes.append([])
         self.freqChartsWidget = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
             "orgEnvelope": self.processingEngine.staticAudio.frequencyEnvelope,
-            "liveFreqsEnvelope": []
+            "liveFreqsEnvelope": liveFreqsEnvelopes
         })
         self.pcmChartWidget = self._ChartWidget({"orgEnvelope": "r", "livePcmEnvelope": "b"}, yValues={
             "orgEnvelope": np.absolute(self.staticAudio.rawData), # ???
@@ -74,7 +77,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         self.pcmsChart.plot(y=self.staticAudio.rawData, pen='r')
         #self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
-        self.fftsChart.plot(self.processingEngine.staticAudio.frequencyEnvelope, pen='r')
+        for envelope in self.processingEngine.staticAudio.frequencyEnvelope:
+            self.fftsChart.plot(envelope, pen='r')
 
         self.ear.stream_start()  # TODO: Do I need this here?
         self.shouldUpdatePersonalFFTChart = False
@@ -117,8 +121,9 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             
         if self.shouldUpdateFrequenciesChart:
             #TODO: corrent! For loop every chart !
-            for key, value in self.freqChartsWidget.yValuesDict.items():
-                self.fftsChart.plot(x=self.freqChartsWidget.xValues, y=value, pen=self.freqChartsWidget.pens[key])
+            for key, values in self.freqChartsWidget.yValuesDict.items():
+                for v in values:
+                    self.fftsChart.plot(x=self.freqChartsWidget.xValues, y=v, pen=self.freqChartsWidget.pens[key])
             self.shouldUpdateFrequenciesChart = False
 
         if self.shouldUpdatePcmChart:
@@ -167,10 +172,11 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
     
     def _updateFrequenciesChart(self, chartsFreqs: dict, yRange=[0, 2000]):
         
-        for key, value in chartsFreqs.items():
-            self.freqChartsWidget.yValuesDict[key].append(value)
+        for key, values in chartsFreqs.items():
+            for i in range(0, len(values)):
+                self.freqChartsWidget.yValuesDict[key][i].append(values[i])
             
-        self.HzLcd.display(chartsFreqs["liveFreqsEnvelope"])
+        self.HzLcd.display(chartsFreqs["liveFreqsEnvelope"][0])# [0]???
         self.shouldUpdateFrequenciesChart = True
     
     def _updatePcmsChart(self):

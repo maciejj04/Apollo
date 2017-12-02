@@ -48,9 +48,9 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         return freq_in_hertz
     
     @staticmethod
-    def findNLoudestFreqsFromFFT(spectrum: np.ndarray, freqs, n) -> int:
-        
-        maxValuesIndexes = np.argsort(spectrum)[-n:]
+    def findNLoudestFreqsFromFFT(spectrum: np.ndarray, freqs) -> np.ndarray:
+        from src.Commons.Settings import TOP_FREQS_COUNT
+        maxValuesIndexes = np.argsort(spectrum)[-TOP_FREQS_COUNT:]
         freqsInHertz = np.array([], dtype=np.float64)
         
         for i in np.nditer(maxValuesIndexes):
@@ -73,27 +73,37 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
             sum += normalizedAmpSpecrt[i] * freqs[i]
             discriminator += normalizedAmpSpecrt[i]
         
-        res = sum / discriminator
-        # test=sum/(discriminator*100)
-        #  print("Spectrum centroid: {}".format(res))
-        return res
+        return sum / discriminator
         
     def getCurrentLiveAudio(self) -> LiveAudio:
         return self.liveAudios[-1]
     
     def _calculateStaticAudioParameters(self):
-        # clacualte from pulgins
-        self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
+        def calculateNMaxFreqsEnvelopes():
+            from src.Commons.Settings import TOP_FREQS_COUNT
+            envelopes = []
+            for i in range(0, TOP_FREQS_COUNT):
+                envelopes.append([])
+                
+            for c in self.staticAudio.chunks:
+                freqs = ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs)
+                freqs = np.sort(freqs)
+                for i in range(0, freqs.size):
+                    envelopes[i].append(freqs[i])
+            return envelopes
+            
+        #self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
+        envelopes = calculateNMaxFreqsEnvelopes()
+        self.staticAudio.frequencyEnvelope = envelopes
     
     def processChunkAndAppendToLiveData(self, chunk: Chunk):
         # TODO: should load plugin analysis
         loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
-        nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs,
-                                                                         n=3)
-        
+        nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs)
+        nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
         currentLiveAudio = self.getCurrentLiveAudio()
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
-        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": loudestFreqInHertz})
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
         self.notifyObservers(currentLiveAudio)
         # currentLiveAudio.parameters["PCMEnvelope"].append()
     
@@ -123,7 +133,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         if self.shouldSave:
             self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
             self.processChunkAndAppendToLiveData(chunk)
-            # print("chunkHighestFreq[{}] = {}".format(len(self.realTimeFrequencyEnvelope), chunkHighestFreq))
 
     # MessageClient
     def handleMessage(self, msgType, data):

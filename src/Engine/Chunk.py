@@ -1,7 +1,6 @@
 import numpy as np
 from .BaseProcessingUtils import BaseProcessingUtils
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
-from typing import Tuple
 
 class Chunk:
     def __init__(self, rawData: np.ndarray, chunkNr=None):

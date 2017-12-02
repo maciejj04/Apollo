@@ -16,8 +16,7 @@ class Converter:
         
         if wav.getnchannels() != Cai.numberOfChannels:
             # Can cause errors if some day Cai.numberOfChannels will be more than 1
-            Logger.info("Converting number of channels: {source} -> {target}".format(source=wav.getnchannels(),
-                                                                                     target=Cai.numberOfChannels))
+            Logger.info("Converting number of channels: {source} -> {target}".format(source=wav.getnchannels(),target=Cai.numberOfChannels))
             rawData = audioop.tomono(rawData, wav.getsampwidth(), 0.5, 0.5)
         
         if wav.getframerate() != Cai.frameRate:

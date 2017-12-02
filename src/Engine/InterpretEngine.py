@@ -61,7 +61,10 @@ class InterpretEngine(Observer):
     
     def baseHzAbsoluteDifference(self, liveAudio: LiveAudio):
         currChunkNr = len(liveAudio.chunks) - 1
-        staticHz = self.staticAudio.frequencyEnvelope[currChunkNr]
+        staticHz = self.staticAudio.frequencyEnvelope[2][currChunkNr]
+        print("0: {}\t1:{}\t2:{}".format(self.staticAudio.frequencyEnvelope[0][currChunkNr],
+                                         self.staticAudio.frequencyEnvelope[1][currChunkNr],
+                                         self.staticAudio.frequencyEnvelope[2][currChunkNr]))
         liveHz = liveAudio.getFrequencyEnvelope()[currChunkNr]
         # TODO: display the difference on HzDiff LCD
         return abs(staticHz - liveHz)

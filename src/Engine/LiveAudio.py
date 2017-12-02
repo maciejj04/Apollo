@@ -20,7 +20,7 @@ class LiveAudio(Audio):
             "PCMEnvelope": []
         }
         
-        self.maxNrOfChunks = Cai.numberOfFrames/Cai.getChunkSize()
+        self.maxNrOfChunks = int(Cai.numberOfFrames/Cai.getChunkSize())
     
     # def handleMessage(self, msgType, data):
     #     return {
@@ -28,12 +28,12 @@ class LiveAudio(Audio):
     #     }[msgType]
 
     def appendNewChunkAndRawData(self, chunk: Chunk):
+        self.chunks.append(chunk)
+        self.fullRawAudioData = np.append(self.fullRawAudioData, chunk.rawData)  # TODO: check whether it works fine
+
         if len(self.chunks) >= self.maxNrOfChunks:
             Recording.stopRecording()
             Recording.saveRecordedDataToFile(self.fullRawAudioData)
-            return
-        self.chunks.append(chunk)
-        self.fullRawAudioData = np.append(self.fullRawAudioData, chunk.rawData)  # TODO: check whether it works fine
 
     def _setCurrentProcessedChunkNr(self, nr):
         self.currentLiveProcessedChunkNr = nr
