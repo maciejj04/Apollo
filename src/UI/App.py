@@ -36,6 +36,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         MessageServer.registerForEvent(self, MsgTypes.UPDATE_PCM_CHART)
         MessageServer.registerForEvent(self, MsgTypes.UPDATE_FREQ_SPECTR_CHART)
         MessageServer.registerForEvent(self, MsgTypes.UPDATE_FREQS_CHART)
+        MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
         
         self.setupUi(self)
         self.resize(1300, 900)
@@ -77,8 +78,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         self.pcmsChart.plot(y=self.staticAudio.rawData, pen='r')
         #self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
-        for envelope in self.processingEngine.staticAudio.frequencyEnvelope:
-            self.fftsChart.plot(envelope, pen='r')
+
+        self.plotStaticAudioFrequencyEnvelope()
 
         self.ear.stream_start()  # TODO: Do I need this here?
         self.shouldUpdatePersonalFFTChart = False
@@ -193,12 +194,20 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         
         chart.setRange(yRange=yRange)
         chart.plot(y=yData, pen=pen, clear=True)
-    
+        
+    def _cleanUpFrequenciesChart(self, data):
+        for envelope in self.freqChartsWidget.yValuesDict["liveFreqsEnvelope"]:
+            envelope.clear()
+
+        self.fftsChart.plotItem.clear()
+        self.plotStaticAudioFrequencyEnvelope()
+
     def handleMessage(self, msgType, data):
         return {
             MsgTypes.UPDATE_PCM_CHART: self._updatePcmsChart,
             MsgTypes.UPDATE_FREQ_SPECTR_CHART: self._updateFreqSpectrumChart,
-            MsgTypes.UPDATE_FREQS_CHART: self._updateFrequenciesChart
+            MsgTypes.UPDATE_FREQS_CHART: self._updateFrequenciesChart,
+            MsgTypes.NEW_RECORDING: self._cleanUpFrequenciesChart
         }[msgType](data)
     
     def _updateFreqSpectrumChart(self, chunk):
@@ -207,3 +216,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             self.shouldUpdatePersonalFFTChart = True
             return
         return
+    
+    def plotStaticAudioFrequencyEnvelope(self):
+        for envelope in self.processingEngine.staticAudio.frequencyEnvelope:
+            self.fftsChart.plot(envelope, pen='r')
