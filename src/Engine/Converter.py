@@ -31,7 +31,7 @@ class Converter:
         if wav.getsampwidth() != Cai.sampleWidthInBytes:
             Logger.info("BitDepth change: {source} -> {target}".format(source=wav.getsampwidth(), target=Cai.sampleWidthInBytes))
             rawData = audioop.lin2lin(rawData, wav.getsampwidth(), Cai.sampleWidthInBytes)
-        
+            
         wav_file = wave.open(self.convertedFileName, 'w')
         wav_file.setparams((Cai.numberOfChannels, Cai.sampleWidthInBytes, Cai.frameRate,
                             int(len(rawData) / Cai.sampleWidthInBytes), 'NONE', "not compressed"))

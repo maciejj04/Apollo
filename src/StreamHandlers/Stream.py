@@ -11,17 +11,13 @@ import pyaudio
 
 
 class Stream(Observable):
-    _stream = None
-    keepListening: bool = True
-    parent = None
-    chunksRead: int = 0
-    data = None
-    
-    def __init__(self, pyAudioObj,
-                 inputDeviceIndex=Idi.currentlyUsedDeviceIndex):  # TODO: probably i should pass only pyAudio
+    def __init__(self, pyAudioObj, inputDeviceIndex=Idi.currentlyUsedDeviceIndex):
         Observable.__init__(self)
         self.inputDeviceIndex = inputDeviceIndex
         self.pyAudio = pyAudioObj
+        self._stream = None
+        self.keepListening: bool = True
+        self.data = None
     
     def open(self):
         self._stream = self.pyAudio.open(format=Cai.sampleWidthPyAudio, input_device_index=Idi.currentlyUsedDeviceIndex,
@@ -45,25 +41,21 @@ class Stream(Observable):
         try:
             self.data = np.fromstring(self._stream.read(Cai.getChunkSize()), dtype=np.int16)
             self.notifyObservers(self.data)
-            
-            gc.collect()  # ?
         
         except Exception as E:
             print(" -- exception! terminating...")
-            print(E, "\n" * 3)  # TODO: raise?
+            print(E, "\n" * 3)
             self.keepListening = False
         
         if self.keepListening:
             self._newStreamThread()
         else:
             print(" -- stream STOPPED")
-        self.chunksRead += 1
     
     def _newStreamThread(self):
         self.threadObject = threading.Thread(target=self.readChunk)
         self.threadObject.start()
     
-    #@executeInNewThread
     def notifyObservers(self, data):
         for o in self._observers:
             o.handleNewData(data)

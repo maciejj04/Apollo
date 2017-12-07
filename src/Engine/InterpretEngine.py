@@ -32,9 +32,8 @@ class InterpretEngine(Observer):
         chunksCorr = self.measureNormalizedCrossCorelationFromAudio(liveAudio)
         hzDiff = self.baseHzAbsoluteDifference(liveAudio)
         
-        statChunk, liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
-        pearsonPCMCorr = self.pearsonCorrelationCoefficient(statChunk.rawData, liveChunk.rawData)
-        pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(statChunk.chunkAS, liveChunk.chunkAS)
+        pearsonPCMCorr = self.pearsonCorrelationCoefficient(self.staticChunk.rawData, self.liveChunk.rawData)
+        pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(self.staticChunk.chunkAS, self.liveChunk.chunkAS)
         
         Logger.interpretEngineLog("""[{chunkNr}] corr = {corr}
                         HzDiff = {HzDiff}
@@ -60,14 +59,13 @@ class InterpretEngine(Observer):
         return measureNormalizedCrossCorelation(data1=staticChunk.chunkAS, data2=liveChunk.chunkAS)
     
     def baseHzAbsoluteDifference(self, liveAudio: LiveAudio):
-        currChunkNr = len(liveAudio.chunks) - 1
-        staticHz = self.staticAudio.frequencyEnvelope[2][currChunkNr]
-        print("0: {}\t1:{}\t2:{}".format(self.staticAudio.frequencyEnvelope[0][currChunkNr],
-                                         self.staticAudio.frequencyEnvelope[1][currChunkNr],
-                                         self.staticAudio.frequencyEnvelope[2][currChunkNr]))
-        liveHz = liveAudio.getFrequencyEnvelope()[currChunkNr]
+        staticChunk, liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
+        
+        # for e in self.staticAudio.frequencyEnvelope:
+        #     print("Freq{currChNr}: {val}".format(currChNr=currChunkNr, val=self.staticAudio.frequencyEnvelope[0][currChunkNr]))
+        
         # TODO: display the difference on HzDiff LCD
-        return abs(staticHz - liveHz)
+        return abs(staticChunk.baseFrequency - liveChunk.baseFrequency)
     
     def pearsonCorrelationCoefficient(self, dataSet1: np.ndarray, dataSet2: np.ndarray):
         return stats.pearsonr(dataSet1, dataSet2)[0]  # TODO: evaluate second return-tuple element!

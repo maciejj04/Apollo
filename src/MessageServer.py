@@ -15,7 +15,7 @@ class MessageServer:
     _observersByEvents: dict = {
         MsgTypes.NEW_RECORDING: [],
         MsgTypes.UPDATE_PCM_CHART: [],
-        MsgTypes.NEW_CURRENT_CHUNK: [],  # Use only during recording
+        MsgTypes.NEW_CURRENT_CHUNK: [],
         MsgTypes.RECORDING_STOP: [],
         MsgTypes.RECORDING_PAUSE: [],
         MsgTypes.UPDATE_FREQ_SPECTR_CHART: [],

@@ -39,7 +39,7 @@ class LiveAudio(Audio):
         self.currentLiveProcessedChunkNr = nr
     
     def getLastChunk(self):
-        return self.chunks[len(self.chunks)]
+        return self.chunks[len(self.chunks)-1]
 
     def getLastChunksIndex(self):
         return len(self.chunks)

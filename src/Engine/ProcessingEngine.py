@@ -58,14 +58,14 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         return freqsInHertz
     
     @staticmethod
-    def calculateSpectralCentroid(AmpSpectr: np.ndarray, freqs: np.ndarray):
+    def calculateSpectralCentroid(ampSpectr: np.ndarray, freqs: np.ndarray):
         """
         Calculates spectral centroid as pointed in https://en.wikipedia.org/wiki/Spectral_centroid
         and
         https://dsp.stackexchange.com/questions/27499/finding-the-right-measure-to-compare-sound-signals-in-the-frequency-domain/27533#27533
         """
-        maxValIndex = np.max(AmpSpectr)
-        normalizedAmpSpecrt = AmpSpectr / maxValIndex  # delete it :'D
+        maxValIndex = np.max(ampSpectr)
+        normalizedAmpSpecrt = ampSpectr / maxValIndex  # delete it :'D
         
         sum = 0
         discriminator = 0
@@ -74,7 +74,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
             discriminator += normalizedAmpSpecrt[i]
         
         return sum / discriminator
-        
+    
     def getCurrentLiveAudio(self) -> LiveAudio:
         return self.liveAudios[-1]
     
@@ -84,24 +84,70 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
             envelopes = []
             for i in range(0, TOP_FREQS_COUNT):
                 envelopes.append([])
-                
+            
             for c in self.staticAudio.chunks:
                 freqs = ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs)
                 freqs = np.sort(freqs)
                 for i in range(0, freqs.size):
                     envelopes[i].append(freqs[i])
             return envelopes
-            
-        #self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
+        
+        # self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
         envelopes = calculateNMaxFreqsEnvelopes()
         self.staticAudio.frequencyEnvelope = envelopes
+        for ch in self.staticAudio.chunks:
+            ch.baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(ch.rawData)
+            Logger.info("Cunks[{nr}] base Hz = {fq}".format(nr=ch.chunkNr, fq=ch.baseFrequency))
+
+    @staticmethod
+    def estimateHzByAutocorrelationMethod(signal: np.ndarray):
+        from scipy.signal import fftconvolve
+        from numpy import diff, argmax
+        from matplotlib.mlab import find
+        """Estimate frequency using autocorrelation
+
+        Pros: Best method for finding the true fundamental of any repeating wave,
+        even with strong harmonics or completely missing fundamental
+
+        Cons: Not as accurate, currently has trouble with finding the true peak
+
+        """
+        
+        fs = Cai.frameRate
+        def parabolic(f, x):
+            xv = 1 / 2 * (f[x - 1] - f[x + 1]) / (f[x - 1] - 2 * f[x] + f[x + 1]) + x
+            yv = f[x] - 1 / 4 * (f[x - 1] - f[x + 1]) * (xv - x)
+            return xv, yv
+
+        # Calculate circular autocorrelation (same thing as convolution, but with
+        # one input reversed in time), and throw away the negative lags
+        corr = fftconvolve(signal, signal[::-1], mode='full')
+        corr = corr[int(len(corr) / 2):]
     
-    def processChunkAndAppendToLiveData(self, chunk: Chunk):
+        # Find the first low point
+        d = diff(corr)
+        start = find(d > 0)[0]  # TODO: bug! Crashes when array consists of zeros
+    
+        # Find the next peak after the low point (other than 0 lag).  This bit is
+        # not reliable for long signals, due to the desired peak occurring between
+        # samples, and other peaks appearing higher.
+        # Should use a weighting function to de-emphasize the peaks at longer lags.
+        # Also could zero-pad before doing circular autocorrelation.
+        peak = argmax(corr[start:]) + start # TODO: replace argmax
+        px, py = parabolic(corr, peak)
+        
+        return fs / px
+
+    def processLastChunk(self):
         # TODO: should load plugin analysis
+        currentLiveAudio = self.getCurrentLiveAudio()
+        chunk = currentLiveAudio.getLastChunk()
         loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
-        currentLiveAudio = self.getCurrentLiveAudio()
+
+        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(chunk.rawData)
+        
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
         self.notifyObservers(currentLiveAudio)
@@ -109,7 +155,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
-
     
     # !! Only Offline for now!
     # def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
@@ -122,19 +167,19 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     #     #Iterates over rawData by windowWidth and calculates coorelation.
     #     for elementNr in range(0, staticAudioRawData.size, windowWidth):
     # __________________________________________________________________________________________
-
+    
     # Used by observer pattern!
     def handleNewData(self, data):
         self.currentChunkNr += 1
         chunk = Chunk(data, self.currentChunkNr)
         self.currentLiveChunk = chunk
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQ_SPECTR_CHART, chunk)
-
+        
         if self.shouldSave:
             self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
-            self.processChunkAndAppendToLiveData(chunk)
-
-    # MessageClient
+            self.processLastChunk()
+        
+    # MessageClient___________________________________________________________________________----
     def handleMessage(self, msgType, data):
         if msgType == MsgTypes.NEW_RECORDING:
             self.setupNewLiveRecording()
@@ -150,3 +195,4 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def notifyObservers(self, data):
         for o in self.getObservers:
             o.handleNewData(data)
+

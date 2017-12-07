@@ -1,12 +1,11 @@
 @startuml
 (*)  --> [PCM]"Stream"
 -->  "ProcessingEngine"
---> [passes LiveAudio reference]"InterpretEngine"
+--> "InterpretEngine"
 "Stream"-->"OutputStream"
 "OutputStream"-->(*)
 
 partition MessageServer #LightSkyBlue {
-  "Stream" --> "MessageServer"
   "ProcessingEngine" --> "MessageServer"
   "InterpretEngine" -->   [         ?       ]"MessageServer"
 }

@@ -1,4 +1,5 @@
 import numpy as np
+from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 class BaseProcessingUtils:
 
@@ -12,5 +13,9 @@ class BaseProcessingUtils:
         fft = np.abs(np.fft.fft(data))
         # fft=10*np.log10(fft)
         freq = np.fft.fftfreq(len(fft), 1.0 / rate)
+
+        from src.Engine.FreqFilters import BandFilters
+        fft = BandFilters.butterworthBandPassFiler(fft, 20, 18000, Cai.frameRate, order=3)
+        fft = abs(fft)
 
         return freq[:int(len(freq) / 2)], fft[:int(len(fft) / 2)]
