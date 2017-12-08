@@ -16,13 +16,8 @@ class Ear():
     """
     The Ear class provides access to continuously recorded microphone data.
     """
-    
-    chunkData = None  # will fill up with threaded recording data
-    fft = None
     _record: bool = False
-    _recordData: np.ndarray = np.ones(0, dtype=Cai.sampleWidthNumpy)
     _recordedFrames: int = 0
-    stream: Stream = None
     
     def __init__(self):
         Observable.__init__(self)

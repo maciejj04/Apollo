@@ -15,6 +15,7 @@ class Audio(abc.ABC):
         
         self.currentLiveProcessedChunk = None
         self.frequencyEnvelope: [] = []
+        self.absolutePCMEnvelope: [] = []
 
     
     def getCurrentLiveProcessedChunk(self):

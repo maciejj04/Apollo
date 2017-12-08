@@ -86,19 +86,21 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
                 envelopes.append([])
             
             for c in self.staticAudio.chunks:
-                freqs = ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs)
-                freqs = np.sort(freqs)
+                freqs = np.sort(
+                            ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs))
+                
                 for i in range(0, freqs.size):
                     envelopes[i].append(freqs[i])
             return envelopes
         
         # self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
+        self.staticAudio.absolutePCMEnvelope = ProcessingEngine.calculateAbsolutePCMEnvelope(self.staticAudio.rawData)
         envelopes = calculateNMaxFreqsEnvelopes()
         self.staticAudio.frequencyEnvelope = envelopes
         for ch in self.staticAudio.chunks:
             ch.baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(ch.rawData)
             Logger.info("Cunks[{nr}] base Hz = {fq}".format(nr=ch.chunkNr, fq=ch.baseFrequency))
-
+    
     @staticmethod
     def estimateHzByAutocorrelationMethod(signal: np.ndarray):
         from scipy.signal import fftconvolve
@@ -114,29 +116,58 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         """
         
         fs = Cai.frameRate
+        
         def parabolic(f, x):
             xv = 1 / 2 * (f[x - 1] - f[x + 1]) / (f[x - 1] - 2 * f[x] + f[x + 1]) + x
             yv = f[x] - 1 / 4 * (f[x - 1] - f[x + 1]) * (xv - x)
             return xv, yv
-
+        
         # Calculate circular autocorrelation (same thing as convolution, but with
         # one input reversed in time), and throw away the negative lags
         corr = fftconvolve(signal, signal[::-1], mode='full')
         corr = corr[int(len(corr) / 2):]
-    
+        
         # Find the first low point
         d = diff(corr)
         start = find(d > 0)[0]  # TODO: bug! Crashes when array consists of zeros
-    
+        
         # Find the next peak after the low point (other than 0 lag).  This bit is
         # not reliable for long signals, due to the desired peak occurring between
         # samples, and other peaks appearing higher.
         # Should use a weighting function to de-emphasize the peaks at longer lags.
         # Also could zero-pad before doing circular autocorrelation.
-        peak = argmax(corr[start:]) + start # TODO: replace argmax
+        peak = argmax(corr[start:]) + start  # TODO: replace argmax
         px, py = parabolic(corr, peak)
         
         return fs / px
+    
+    @staticmethod
+    def calculateAbsolutePCMEnvelope(signal: np.ndarray):  # obwiednia
+        
+        envelope = ProcessingEngine\
+            .lowPassFilter(
+                np.array(
+                    [abs(x) for x in signal]
+                ), n=18
+        )
+        return envelope
+    
+    @staticmethod
+    def lowPassFilter(signal: np.ndarray, n=3):
+        # if n % 2 == 0:
+        #     raise ValueError("Only Odd numbers!")
+        #
+        # new = [signal[e] for e in range(0, n / 2)]
+        new = []
+        for i in range(0, signal.size - int(n / 2), 1):
+            new.append(np.mean(signal[i:i + n]))
+    
+        # for e in range(signal[signal.size] - n / 2, signal.size):
+        #     signal.append(signal[e])
+        #
+        # new.append(a[len(a) - 1])
+        return new
+
 
     def processLastChunk(self):
         # TODO: should load plugin analysis
@@ -145,8 +176,9 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
-
-        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(chunk.rawData)
+        
+        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(
+            chunk.rawData)
         
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
@@ -174,11 +206,12 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         chunk = Chunk(data, self.currentChunkNr)
         self.currentLiveChunk = chunk
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQ_SPECTR_CHART, chunk)
+        ProcessingEngine.calculateAbsolutePCMEnvelope(chunk.rawData)
         
         if self.shouldSave:
             self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
             self.processLastChunk()
-        
+    
     # MessageClient___________________________________________________________________________----
     def handleMessage(self, msgType, data):
         if msgType == MsgTypes.NEW_RECORDING:
@@ -195,4 +228,3 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def notifyObservers(self, data):
         for o in self.getObservers:
             o.handleNewData(data)
-
