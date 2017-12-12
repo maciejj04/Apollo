@@ -1,0 +1,2 @@
+All Plugin based additional functionalities have to implement abstract class "PluginAbstractModel" in oreder to
+be loaded and executed properly.
