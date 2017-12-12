@@ -7,3 +7,6 @@ All Plugins have to fulfill following requirements in order to be loaded and exe
 - Plugin will be informed about each portion of data which was just read from mic, it's plugins business if it handles
     it immediately or not(in this case it's assumed to return empty string).
 - PluginLoader class assumes that plugin class name is the same as containing module name.
+- All plugin files have to be placed in src.Engine.PluginModule.plugins package, otherwise they wont be automatically
+    loaded on application startup.
+- StaticAudio.rawData can be passed to plugin

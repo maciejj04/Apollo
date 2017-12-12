@@ -1,6 +1,7 @@
 from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
 
 
-class MockPlugin(PluginAbstractModel):
+class CorrPlugin(PluginAbstractModel):
+    
     def process(self, data) -> str:
-        return "MockPlugin There I am!"
+        return "CorrPlugin handled data"

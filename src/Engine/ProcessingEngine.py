@@ -1,3 +1,4 @@
+from src.Engine.PluginModule.PluginHandler import PluginHandler
 from .BaseProcessingUtils import BaseProcessingUtils
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.helper_functions import my_range
@@ -30,6 +31,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         self._calculateStaticAudioParameters()
         self.liveAudios = []
         self.currentLiveChunk: Chunk
+        self.pluginsHandler: PluginHandler = PluginHandler()
     
     def calculateFrequencyEnvelopeForAudio(self, audio: Audio):
         for c in audio.chunks:
@@ -154,18 +156,10 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     
     @staticmethod
     def lowPassFilter(signal: np.ndarray, n=3):
-        # if n % 2 == 0:
-        #     raise ValueError("Only Odd numbers!")
-        #
-        # new = [signal[e] for e in range(0, n / 2)]
         new = []
         for i in range(0, signal.size - int(n / 2), 1):
             new.append(np.mean(signal[i:i + n]))
     
-        # for e in range(signal[signal.size] - n / 2, signal.size):
-        #     signal.append(signal[e])
-        #
-        # new.append(a[len(a) - 1])
         return new
 
 
@@ -209,6 +203,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         ProcessingEngine.calculateAbsolutePCMEnvelope(chunk.rawData)
         
         if self.shouldSave:
+            self.pluginsHandler.handleNewChunk(chunk.rawData)
             self.getCurrentLiveAudio().appendNewChunkAndRawData(chunk)
             self.processLastChunk()
     
