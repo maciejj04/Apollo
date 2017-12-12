@@ -1,2 +1,9 @@
-All Plugin based additional functionalities have to implement abstract class "PluginAbstractModel" in oreder to
-be loaded and executed properly.
+
+All Plugins have to fulfill following requirements in order to be loaded and executed properly:
+- Plugins are classes
+- implement abstract class "PluginAbstractModel"
+- File name suffix should contain "Plugin" - e.g.: SSAPlugin.
+- Plugins have to return theirs output in for of a string.
+- Plugin will be informed about each portion of data which was just read from mic, it's plugins business if it handles
+    it immediately or not(in this case it's assumed to return empty string).
+- PluginLoader class assumes that plugin class name is the same as containing module name.

@@ -47,3 +47,11 @@ class Logger:
     def centroidLog(string: str):
         print(string)
         Logger._writeLogToFile(string=string, filePath="centroidLog.txt")
+
+    @staticmethod
+    def warninig(warnStr: str):
+        print('[' + str(datetime.now()) + '][WARNING]: ' + warnStr)
+
+    @staticmethod
+    def error(errorStr: str):
+        print('[' + str(datetime.now()) + '][ERROR]: ' + errorStr)
