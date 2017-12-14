@@ -11,6 +11,6 @@ class Chunk:
         from src.Engine.ProcessingEngine import ProcessingEngine
         self.spectralCentroid = ProcessingEngine.calculateSpectralCentroid(self.chunkAS, self.chunkFreqs)
         self.baseFrequency: int  # by autocorrelation method
-
+        
         self.chunksMinFreq = np.min(np.abs(self.chunkAS))  # Rename! It's not freq but just max SA value
         self.chunksMaxFreq = np.max(np.abs(self.chunkAS))

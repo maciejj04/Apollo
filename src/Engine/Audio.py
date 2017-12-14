@@ -14,7 +14,7 @@ class Audio(abc.ABC):
         self.maxFrequency: int = None
         
         self.currentLiveProcessedChunk = None
-        self.frequencyEnvelope: [] = []
+        self.nfrequencyEnvelopes: [] = []
         self.absolutePCMEnvelope: [] = []
 
     

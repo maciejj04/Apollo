@@ -1,5 +1,7 @@
 import numpy as np
 from math import sqrt
+
+from src.Commons.Settings import TOP_FREQS_COUNT
 from src.Observer import Observer
 from src.Engine.helpers.NewThreadExecutionAanotation import executeInNewThread
 from src.Engine.LiveAudio import LiveAudio
@@ -79,3 +81,10 @@ class InterpretEngine(Observer):
     def compareSpectrumCentroid(self):
         diff = abs(self.staticChunk.spectralCentroid - self.liveChunk.spectralCentroid)
         Logger.centroidLog("StatCentroid={}\tliveCentroid={}\tdiff={}".format(self.staticChunk.spectralCentroid, self.liveChunk.spectralCentroid, diff))
+
+    def compareNHighestAmplitudes(self, liveAudio: LiveAudio):
+        processedChunkIndex = len(liveAudio.chunks)
+        liveAudioHighest = [liveAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
+        statAudioHighest = [self.staticAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
+        
+        #return abs(statAudioHighest - liveAudioHighest)

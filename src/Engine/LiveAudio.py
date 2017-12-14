@@ -1,3 +1,4 @@
+from src.Commons.Settings import TOP_FREQS_COUNT
 from .Audio import Audio
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 import numpy as np
@@ -19,7 +20,9 @@ class LiveAudio(Audio):
             "frequencyEnvelope": [],
             "PCMEnvelope": []
         }
-        
+        for i in range(0, TOP_FREQS_COUNT):
+            self.nfrequencyEnvelopes.append([])
+    
         self.maxNrOfChunks = int(Cai.numberOfFrames/Cai.getChunkSize())
     
     # def handleMessage(self, msgType, data):
@@ -46,3 +49,10 @@ class LiveAudio(Audio):
     
     def getFrequencyEnvelope(self) -> []:
         return self.parameters["frequencyEnvelope"]
+    
+    def appendFreqEnvelopesValues(self, *args):
+        if len(args) != TOP_FREQS_COUNT:
+            raise Exception("Can not append {} values! TOP_FREQS_COUNT={}".format(len(args), TOP_FREQS_COUNT))
+        
+        for index in range(0, len(args)):
+            self.nfrequencyEnvelopes[index].append(args[index])

@@ -22,6 +22,7 @@ class PluginHandler:
     Class observers for new data from Stream, uses loaded pluginns to process/interpret data and Logs(Treminal/UI)
     data(:str) it retrieve from ones.
     """
+    
     def __init__(self):
         self.pluginClassesObjects = []
         # TODO: plugins package paths external config
@@ -33,10 +34,13 @@ class PluginHandler:
         for pluginName in self.foundPluginFiles:
             self.pluginClassesObjects.append(PluginLoader.loadPlugin(pluginName))
             self.pluginResponseDict[pluginName] = []
-
+    
     def handleNewChunk(self, data):
         for p in self.pluginClassesObjects:
-            Logger.pluginLog("Not implemented :'(", p.process(data))
-            
+            Logger.pluginLog("x ", p.process(data))
+    
     def searchForNewPlugins(self):
         raise NotImplementedError()
+        
+        
+        # TODO: update settings as windowWidth for plugins etc. when triggeered from UI settings.

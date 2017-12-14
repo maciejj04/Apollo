@@ -36,7 +36,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def calculateFrequencyEnvelopeForAudio(self, audio: Audio):
         for c in audio.chunks:
             freq = ProcessingEngine.findLoudestFreqFromFFT(c.chunkAS, c.chunkFreqs)
-            audio.frequencyEnvelope.append(freq)
+            audio.nfrequencyEnvelopes.append(freq)
             Logger.info("{0}. ChunksFreq = {1}".format(c.chunkNr, freq))
     
     @staticmethod
@@ -98,7 +98,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         # self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
         self.staticAudio.absolutePCMEnvelope = ProcessingEngine.calculateAbsolutePCMEnvelope(self.staticAudio.rawData)
         envelopes = calculateNMaxFreqsEnvelopes()
-        self.staticAudio.frequencyEnvelope = envelopes
+        self.staticAudio.nfrequencyEnvelopes = envelopes
         for ch in self.staticAudio.chunks:
             ch.baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(ch.rawData)
             Logger.info("Cunks[{nr}] base Hz = {fq}".format(nr=ch.chunkNr, fq=ch.baseFrequency))
@@ -112,8 +112,6 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
 
         Pros: Best method for finding the true fundamental of any repeating wave,
         even with strong harmonics or completely missing fundamental
-
-        Cons: Not as accurate, currently has trouble with finding the true peak
 
         """
         
@@ -164,12 +162,13 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
 
 
     def processLastChunk(self):
-        # TODO: should load plugin analysis
+
         currentLiveAudio = self.getCurrentLiveAudio()
         chunk = currentLiveAudio.getLastChunk()
         loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
+        currentLiveAudio.appendFreqEnvelopesValues(*nLoudestFreqsInHertz)
         
         currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(
             chunk.rawData)
@@ -182,17 +181,12 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
     
-    # !! Only Offline for now!
-    # def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
-    #
-    #     windowWidth = Cai.getChunkSize()  # depends on computer resources. For now it's 4410/10=441
-    #     step = Cai.getChunkSize()/10 # depends on computer resources. For now it's 4410/10=441
-    #     # Takes
-    #     for index in range(0, staticAudioRawData.size)
-    #
-    #     #Iterates over rawData by windowWidth and calculates coorelation.
-    #     for elementNr in range(0, staticAudioRawData.size, windowWidth):
-    # __________________________________________________________________________________________
+    def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
+        pass
+        
+        
+        
+    #__________________________________________________________________________________________
     
     # Used by observer pattern!
     def handleNewData(self, data):
@@ -223,3 +217,4 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def notifyObservers(self, data):
         for o in self.getObservers:
             o.handleNewData(data)
+            

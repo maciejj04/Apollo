@@ -64,7 +64,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         for i in range(0, TOP_FREQS_COUNT):
             liveFreqsEnvelopes.append([])
         self.freqChartsWidget = self._ChartWidget({"orgEnvelope": 'r', "liveFreqsEnvelope": 'b'}, yValues={
-            "orgEnvelope": self.processingEngine.staticAudio.frequencyEnvelope,
+            "orgEnvelope": self.processingEngine.staticAudio.nfrequencyEnvelopes,
             "liveFreqsEnvelope": liveFreqsEnvelopes
         })
         self.pcmChartWidget = self._ChartWidget({"orgEnvelope": "r", "livePcmEnvelope": "b", "averagedEnvelope": "g"}, yValues={
@@ -223,7 +223,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
     
         c = ['r', 'g', 'b']
         i = 0
-        for envelope in self.processingEngine.staticAudio.frequencyEnvelope:
+        for envelope in self.processingEngine.staticAudio.nfrequencyEnvelopes:
             # C = pyqtgraph.hsvColor(time.time() / 5 % 1, alpha=.5)
             pen = pyqtgraph.mkPen(color=c[i], width=2)
             self.fftsChart.plot(envelope, pen=c[i])
