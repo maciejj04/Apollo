@@ -1,3 +1,4 @@
+from src.MessageServer import MessageServer, MsgTypes
 from src.Observer import Observer
 from src.Engine.PluginModule.PluginLoader import PluginLoader
 from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
@@ -32,7 +33,11 @@ class PluginHandler:
         self.pluginResponseDict: {} = {}
         
         for pluginName in self.foundPluginFiles:
-            self.pluginClassesObjects.append(PluginLoader.loadPlugin(pluginName))
+            pluginClassObj = PluginLoader.loadPlugin(pluginName)
+            if type(pluginClassObj).__name__ == "StaticCorrPlugin":                         # Little hack for now :'D
+                MessageServer.registerForEvent(pluginClassObj, MsgTypes.RECORDING_STOP)
+                
+            self.pluginClassesObjects.append(pluginClassObj)
             self.pluginResponseDict[pluginName] = []
     
     def handleNewChunk(self, data):

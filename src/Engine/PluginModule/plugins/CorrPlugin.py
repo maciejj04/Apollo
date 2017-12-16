@@ -24,12 +24,12 @@ class CorrPlugin(PluginAbstractModel):
         self.startIndex: int = 0
         self.correlationVectors: [] = []
         self.processSpectrumsFromRawData()
+        print("dupa")
 
     
     def process(self, data) -> str:
         # self.liveAudioRawData = np.append(self.liveAudioRawData, data)
         # self.correlateAsFarAsYouCan()
-        
         return "CorrPlugin handled data"
     
     # one object per single window analysis
@@ -38,13 +38,14 @@ class CorrPlugin(PluginAbstractModel):
             self.squareSumSqrt = sqrt(squareSum(data1))
         
         def measureNormalizedCrossCorelation(self, data1: np.ndarray, data2: np.ndarray):
-            return (np.correlate(data1, data2) / self.squareSumSqrt * sqrt(squareSum(data2)))[0]
+            return np.correlate(data1, data2)[0] / \
+                    (self.squareSumSqrt * sqrt(squareSum(data2)))
     
     def processSpectrumsFromRawData(self):
-        for i in range(0, self.staticAudioRawData.size - self.step, self.step):
-            self.corrValues.append(
+        for i in range(0, self.staticAudioRawData.size - self.windowWidth, self.step):
+            self.staticSpectrums.append(
                 self._getFreqSpectrum(
-                    self.staticAudioRawData[i + i + self.step]
+                    self.staticAudioRawData[i: i + self.windowWidth]
                 )
             )
     
@@ -55,15 +56,14 @@ class CorrPlugin(PluginAbstractModel):
         return freqSpectrum[:int(len(freqSpectrum) / 2)]
     
     def correlateAsFarAsYouCan(self):
-        for i in range(self.startIndex, self.liveAudioRawData.size - self.step, self.step):
+        for i in range(self.startIndex, self.liveAudioRawData.size - self.windowWidth, self.step):
             
-            spectrum = self._getFreqSpectrum(self.liveAudioRawData[i:i + self.step])
+            spectrum = self._getFreqSpectrum(self.liveAudioRawData[i:i + self.windowWidth])
             
             self.liveSpectrums.append(spectrum)
             self._compareWithEachStaticSpectrum(spectrum)
             
-        
-        self.startIndex += self.step
+            self.startIndex += self.step
 
     def _compareWithEachStaticSpectrum(self, spectrum: np.ndarray):
         corr = CorrPlugin.NormalizedCrossCorr(spectrum)
@@ -79,12 +79,3 @@ class CorrPlugin(PluginAbstractModel):
 
 def squareSum(dataSet):
     return sum(e * e for e in dataSet)
-
-
-if __name__ == "__main__":
-    PluginAbstractModel.staticAudioRawData = np.array([0,1,2,3,4,5,6,7,8,9])
-    cp = CorrPlugin(4410)
-    #cp.staticAudioRawData = np.array([0,1,2,3,4,5,6,7,8,9])
-    cp.process(np.array([0,1,2]))
-    
-    print("dupa")

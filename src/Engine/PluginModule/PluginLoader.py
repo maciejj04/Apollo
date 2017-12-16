@@ -1,6 +1,6 @@
 from configuration import PLUGIN_PACKAGE_PATH
 from src.tools.Logger import Logger
-
+from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 
 class PluginLoader:
     loadedModulesClasses: [] = []
@@ -24,7 +24,7 @@ class PluginLoader:
             cls.loadedModulesClasses.append(moduleClass)
             
             Logger.info("Dynamically loaded plugin :" + name)
-            return moduleClass()
+            return moduleClass(Cai.getChunkSize())
         
         except ValueError as e:  # Exception?
             print("No Model named: " + name)
