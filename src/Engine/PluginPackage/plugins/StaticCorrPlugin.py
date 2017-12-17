@@ -104,7 +104,7 @@ class StaticCorrPlugin(PluginAbstractModel):
             self.liveSpectrums = self.processSpectrumsFromRawData(self.liveAudioRawData)
             self.correlateSoundTracks()
             #self.dropCorrVectorsToFile()
-            #self.print3DPlot(self.correlationVectors)
+            self.print3DPlot(self.correlationVectors)
     
     def print3DPlot(self, arrayOfArrays):
         import matplotlib.pyplot as plt
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     # sweep_220Hz_440Hz_ - 3dBFS_2s
     import wave
     
-    f1 = wave.open("../../../../resources/whistle1.wav")#  sweep_220Hz_330Hz_-3dBFS_1s
-    f2 = wave.open("../../../../resources/whistle2.wav")#  sweep_255Hz_330Hz_-3dBFS_1s
+    f1 = wave.open("../../../../resources/osiem1.wav")#  sweep_220Hz_330Hz_-3dBFS_1s
+    f2 = wave.open("../../../../resources/osiem2.wav")#  sweep_255Hz_330Hz_-3dBFS_1s
     rawData1 = np.fromstring(f1.readframes(f1.getnframes()), dtype=np.int16)
     rawData2 = np.fromstring(f2.readframes(f2.getnframes()), dtype=np.int16)
     PluginAbstractModel.staticAudioRawData = rawData1

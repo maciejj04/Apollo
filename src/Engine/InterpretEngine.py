@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 from math import sqrt
 
@@ -36,13 +38,16 @@ class InterpretEngine(Observer):
         
         pearsonPCMCorr = self.pearsonCorrelationCoefficient(self.staticChunk.rawData, self.liveChunk.rawData)
         pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(self.staticChunk.chunkAS, self.liveChunk.chunkAS)
-        
+        diffsTuple = self.compareNHighestAmplitudes(liveAudio)
+
         Logger.interpretEngineLog("""[{chunkNr}] corr = {corr}
                         HzDiff = {HzDiff}
                         PerasonPCMCorr = {pearsonPCMCorr}
                         pearsonSpectrumCorr = {pearsonSpectrumCorr}
+                        TopFreqsDiffs = {diffs}
                         """.format(chunkNr=liveAudio.getLastChunksIndex() - 1, corr=chunksCorr, HzDiff=hzDiff,
-                                          pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr))
+                                          pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr,
+                                          diffs=diffsTuple))
 
         self.compareSpectrumCentroid()
     
@@ -82,9 +87,11 @@ class InterpretEngine(Observer):
         diff = abs(self.staticChunk.spectralCentroid - self.liveChunk.spectralCentroid)
         Logger.centroidLog("StatCentroid={}\tliveCentroid={}\tdiff={}".format(self.staticChunk.spectralCentroid, self.liveChunk.spectralCentroid, diff))
 
-    def compareNHighestAmplitudes(self, liveAudio: LiveAudio):
-        processedChunkIndex = len(liveAudio.chunks)
+    def compareNHighestAmplitudes(self, liveAudio: LiveAudio) -> Tuple:
+        processedChunkIndex = len(liveAudio.chunks) - 1
         liveAudioHighest = [liveAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
         statAudioHighest = [self.staticAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
         
-        #return abs(statAudioHighest - liveAudioHighest)
+        diffsTuple = tuple([abs(statAudioHighest[i] - liveAudioHighest[i]) for i in range(0, TOP_FREQS_COUNT)])
+        
+        return diffsTuple

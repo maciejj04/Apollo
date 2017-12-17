@@ -170,8 +170,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
         currentLiveAudio.appendFreqEnvelopesValues(*nLoudestFreqsInHertz)
         
-        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(
-            chunk.rawData)
+        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(chunk.rawData)
         
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
