@@ -1,7 +1,7 @@
 from src.MessageServer import MessageServer, MsgTypes
 from src.Observer import Observer
-from src.Engine.PluginModule.PluginLoader import PluginLoader
-from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
+from src.Engine.PluginPackage.PluginLoader import PluginLoader
+from src.Engine.PluginPackage.PluginAbstractModel import PluginAbstractModel
 import os
 
 from src.tools.Logger import Logger
@@ -29,7 +29,7 @@ class PluginHandler:
         # TODO: plugins package paths external config
         import os
         print(os.listdir("./"))
-        self.foundPluginFiles = findPluginFiles("./src/Engine/PluginModule/plugins")
+        self.foundPluginFiles = findPluginFiles("./src/Engine/PluginPackage/plugins")
         self.pluginResponseDict: {} = {}
         
         for pluginName in self.foundPluginFiles:

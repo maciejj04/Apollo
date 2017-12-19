@@ -1,4 +1,4 @@
-from src.Engine.PluginModule.PluginHandler import PluginHandler
+from src.Engine.PluginPackage.PluginHandler import PluginHandler
 from .BaseProcessingUtils import BaseProcessingUtils
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 from src.tools.helper_functions import my_range

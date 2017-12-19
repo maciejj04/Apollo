@@ -3,7 +3,7 @@ from functools import wraps
 import numpy as np
 from math import sqrt
 
-from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
+from src.Engine.PluginPackage.PluginAbstractModel import PluginAbstractModel
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 import time
 

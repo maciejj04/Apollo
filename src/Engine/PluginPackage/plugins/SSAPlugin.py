@@ -1,4 +1,4 @@
-from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
+from src.Engine.PluginPackage.PluginAbstractModel import PluginAbstractModel
 
 
 class SSAPlugin(PluginAbstractModel):

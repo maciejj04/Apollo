@@ -6,7 +6,6 @@ from src.Commons.Audio import Audio
 from src.Commons.Settings import TOP_FREQS_COUNT
 from src.Engine.Ear import Ear
 from src.Engine.InterpretEngine import InterpretEngine
-from src.Engine.PluginModule.PluginAbstractModel import PluginAbstractModel
 from src.Engine.ProcessingEngine import ProcessingEngine
 from src.Engine.RecordingController import Recording
 from src.Engine.StaticAudio import StaticAudio
@@ -49,8 +48,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.recordButton.clicked.connect(self.recordButtonAction)
         self.ear = Ear()
         rawInputAudioData = Audio().loadFromPathAndAdjust().getRawDataFromWav()
-        
         self.staticAudio = StaticAudio(rawData=rawInputAudioData)
+        from src.Engine.PluginPackage.PluginAbstractModel import PluginAbstractModel
         PluginAbstractModel.staticAudioRawData = self.staticAudio.rawData
         self.processingEngine = ProcessingEngine(staticAudio=self.staticAudio)
         self.interpretEngine = InterpretEngine(staticAudioRef=self.staticAudio)
