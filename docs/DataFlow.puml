@@ -1,0 +1,11 @@
+@startuml
+Stream -> ProcessingEngine: Chunk
+ProcessingEngine -> InterpretEngine: Chunk
+
+ProcessingEngine -> PluginHandler: raw data
+PluginHandler -> Plugin: raw data
+Plugin --> PluginHandler: string
+PluginHandler -> UI: string
+InterpretEngine -> UI: case data
+
+@enduml
