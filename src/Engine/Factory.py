@@ -8,5 +8,5 @@ class Factory:
         if self.butterFilter is not None:
             return self.butterFilter
 
-        self.butterFilter = BandFilters.ButterWorthFilter(20, 1800, order=3)
+        self.butterFilter = BandFilters.ButterWorthFilter(20, 18000, order=3)
         return self.butterFilter
