@@ -9,5 +9,10 @@ All Plugins have to fulfill following requirements in order to be loaded and exe
 - PluginLoader class assumes that plugin class name is the same as containing module name.
 - All plugin files have to be placed in src.Engine.PluginModule.plugins package, otherwise they wont be automatically
     loaded on application startup.
-- StaticAudio.rawData can be passed to plugin
+- StaticAudio.rawData is a static part of PluginAbstractModel class.
 - Plugin can react to application events aka Messages. In order to enable it, simply implement MessageClient abstract class.
+    and register to desirable event.
+
+
+Possible improvements:
+- Plugin can return Dictionary with fields associated with their destination(e.g. UI). Contract can enforce specified fields.
