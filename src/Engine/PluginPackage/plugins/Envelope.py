@@ -2,6 +2,15 @@ import wave
 
 import numpy as np
 
+from Engine.PluginPackage.PluginAbstractModel import PluginAbstractModel
+from Engine.PluginPackage.plugins.EnvelopesCorrelation import EnvelopesCorrelation
+from Engine.PluginPackage.plugins.StaticCorrPlugin import StaticCorrPlugin
+from MessageServer import MsgTypes
+
+
+def squareSum(dataSet):
+    return sum(e * e for e in dataSet)
+
 
 class Envelope:
     def __init__(self, windowSize: int):
@@ -23,7 +32,7 @@ class Envelope:
             filtered.append(
                 np.mean(signal[i:i + windowSize])
             )
-    
+        
         return filtered
     
     def meanN(self, signal: np.ndarray, windowSize: int = None):
@@ -54,20 +63,34 @@ class Envelope:
         # 2
         maxEnvelope = self.maxEnvelope(signal)
         # 3
-        #meanedEnvelope = self.meanN(maxEnvelope, meanWindowSize)
+        # meanedEnvelope = self.meanN(maxEnvelope, meanWindowSize)
         meanedEnvelope = self.meanWithIgnoredBegin(maxEnvelope, meanWindowSize)
         
         return meanedEnvelope
 
 
 if __name__ == "__main__":
-    f = wave.open("../../../../resources/osiem1.wav")
+    f = wave.open("../../../../resources/whistle1.wav")
+    f2 = wave.open("../../../../resources/whistle1v3.wav") # sweep_230Hz_330Hz_-3dBFS_1s
     import matplotlib.pyplot as plt
     
-    x = f.readframes(f.getnframes())  # Raw audio data (in bytes)
-    x = np.fromstring(x, dtype=np.int16)
+    o1 = np.fromstring(f.readframes(f.getnframes()), dtype=np.int16)
+    o2 = np.fromstring(f2.readframes(f2.getnframes()), dtype=np.int16)
     
-    envelope = Envelope(windowSize=200).threeStepEnvelope(x, meanWindowSize=200)
+    envelope = Envelope(windowSize=200).threeStepEnvelope(o1, meanWindowSize=200)
+    envelope2 = Envelope(windowSize=200).threeStepEnvelope(o2, meanWindowSize=200)
+    from scipy import stats, sqrt
     
-    plt.plot(abs(x), 'r', envelope, 'b')
+    print("Pearson coefficient = {}".format(
+        stats.pearsonr(envelope, envelope2)[0]))  # TODO: evaluate second return-tuple element!
+    corrObj = StaticCorrPlugin.NormalizedCrossCorr(envelope)
+    corr = corrObj.measureNormalizedCrossCorelation(envelope, envelope2)
+    
+    print("MyCorr = {}".format(corr))
+    
+    # corr picture
+    # corrObj = EnvelopesCorrelation(env1=envelope, env2=envelope2, windowSize=4410)
+    # corrObj.correlate()
+    
+    plt.plot(o2, 'r', envelope, 'g', envelope2, 'b')
     plt.show()

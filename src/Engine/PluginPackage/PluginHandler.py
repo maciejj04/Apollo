@@ -1,3 +1,4 @@
+from Commons.Settings import ENABLE_PLUGINS
 from src.MessageServer import MessageServer, MsgTypes
 from src.Observer import Observer
 from src.Engine.PluginPackage.PluginLoader import PluginLoader
@@ -41,6 +42,8 @@ class PluginHandler:
             self.pluginResponseDict[pluginName] = []
     
     def handleNewChunk(self, data):
+        if not ENABLE_PLUGINS:
+            return
         for p in self.pluginClassesObjects:
             Logger.pluginLog("x ", p.process(data))
     

@@ -66,14 +66,21 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             "orgEnvelope": self.processingEngine.staticAudio.nfrequencyEnvelopes,
             "liveFreqsEnvelope": liveFreqsEnvelopes
         })
-        self.pcmChartWidget = self._ChartWidget({"orgEnvelope": "r", "livePcmEnvelope": "b", "averagedEnvelope": "g"}, yValues={
-            "averagedEnvelope": self.staticAudio.absolutePCMEnvelope,
-            "orgEnvelope": self.staticAudio.rawData,  # ???
-            "livePcmEnvelope": []
-        })
+        self.pcmChartWidget = self._ChartWidget(pens={
+                                                "orgEnvelope": "r",
+                                                "livePcmEnvelope": "b",
+                                                "averagedEnvelope": "g",
+                                                "threeStepLiveEnvelope": "b"},
+                                                yValues={
+                                                    "averagedEnvelope": self.staticAudio.absolutePCMEnvelope,
+                                                    "orgEnvelope": self.staticAudio.rawData,  # ???
+                                                    "threeStepEnvelope": self.staticAudio.envelope,
+                                                    "threeStepLiveEnvelope": []
+                                                })
         
         self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='r')
-        self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["averagedEnvelope"], pen='g')
+        self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["threeStepEnvelope"], pen='b')
+        # self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["averagedEnvelope"], pen='g')
         # self.pcmsChart.plot(y=self.pcmChartWidget.yValuesDict["orgEnvelope"], pen='b')
         
         self.plotStaticAudioFrequencyEnvelope()
@@ -112,14 +119,13 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         # self._updateFftsChart()
         # self._updatePcmsChart()
         if self.shouldUpdatePersonalFFTChart is True:
-
             # self.personalFFTChart.plot(self.currentChunk.chunkFreqs,
             #                            self.currentChunk.chunkAS / self.currentChunk.chunksMaxFreq,
             #                            pen='r', clear=True)
             self.personalFFTChart.plot(self.currentChunk.chunkFreqs,
                                        self.currentChunk.rawFFT / np.max(self.currentChunk.rawFFT),
                                        pen='b', clear=True)
-
+            
             self.shouldUpdatePersonalFFTChart = False
         
         if self.shouldUpdateFrequenciesChart:
@@ -129,8 +135,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             self.shouldUpdateFrequenciesChart = False
         
         if self.shouldUpdatePcmChart:
-            for key, value in self.pcmChartWidget.yValuesDict.items():
-                self.pcmsChart.plot(x=self.pcmChartWidget.xValues, y=value, pen=self.pcmChartWidget.pens[key])
+            #            for key, value in self.pcmChartWidget.yValuesDict.items():
+            self.pcmsChart.plot(x=self.pcmChartWidget.xValues,
+                                y=self.pcmChartWidget.yValuesDict["threeStepLiveEnvelope"],
+                                pen=self.pcmChartWidget.pens["threeStepLiveEnvelope"])
             self.shouldUpdatePcmChart = False
         
         # import threading
@@ -181,7 +189,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.HzLcd.display(chartsFreqs["liveFreqsEnvelope"][0])  # [0]???
         self.shouldUpdateFrequenciesChart = True
     
-    def _updatePcmsChart(self):
+    def _updatePcmsChart(self, data):
+        for key, values in data.items():
+            self.pcmChartWidget.yValuesDict[key] += values  # Concatenating two python lists
+        
         self.shouldUpdatePcmChart = True
     
     def _drawOnce(self, chart, yData, yRange=[0, 2000]):
@@ -219,7 +230,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         return
     
     def plotStaticAudioFrequencyEnvelope(self):
-    
+        
         c = ['r', 'g', 'b']
         i = 0
         for envelope in self.processingEngine.staticAudio.nfrequencyEnvelopes:

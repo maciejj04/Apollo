@@ -1,3 +1,4 @@
+from Engine.Envelope import Envelope
 from src.Engine.PluginPackage.PluginHandler import PluginHandler
 from .BaseProcessingUtils import BaseProcessingUtils
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
@@ -28,6 +29,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         self.shouldSave = False
         
         self.staticAudio = staticAudio
+        self.envelopeObj = Envelope(windowSize=200)
         self._calculateStaticAudioParameters()
         self.liveAudios = []
         self.currentLiveChunk: Chunk
@@ -89,7 +91,7 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
             
             for c in self.staticAudio.chunks:
                 freqs = np.sort(
-                            ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs))
+                    ProcessingEngine.findNLoudestFreqsFromFFT(c.chunkAS, c.chunkFreqs))
                 
                 for i in range(0, freqs.size):
                     envelopes[i].append(freqs[i])
@@ -97,6 +99,8 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         
         # self.calculateFrequencyEnvelopeForAudio(self.staticAudio)
         self.staticAudio.absolutePCMEnvelope = ProcessingEngine.calculateAbsolutePCMEnvelope(self.staticAudio.rawData)
+        self.staticAudio.envelope = self.envelopeObj.threeStepEnvelope(self.staticAudio.rawData, meanWindowSize=200)
+        
         envelopes = calculateNMaxFreqsEnvelopes()
         self.staticAudio.nfrequencyEnvelopes = envelopes
         for ch in self.staticAudio.chunks:
@@ -144,11 +148,11 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     @staticmethod
     def calculateAbsolutePCMEnvelope(signal: np.ndarray):  # obwiednia
         
-        envelope = ProcessingEngine\
+        envelope = ProcessingEngine \
             .lowPassFilter(
-                np.array(
-                    [abs(x) for x in signal]
-                ), n=18
+            np.array(
+                [abs(x) for x in signal]
+            ), n=18
         )
         return envelope
     
@@ -157,12 +161,11 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         new = []
         for i in range(0, signal.size - int(n / 2), 1):
             new.append(np.mean(signal[i:i + n]))
-    
+        
         return new
-
-
+    
     def processLastChunk(self):
-
+        
         currentLiveAudio = self.getCurrentLiveAudio()
         chunk = currentLiveAudio.getLastChunk()
         loudestFreqInHertz = ProcessingEngine.findLoudestFreqFromFFT(SAData=chunk.chunkAS, freqs=chunk.chunkFreqs)
@@ -170,10 +173,14 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
         currentLiveAudio.appendFreqEnvelopesValues(*nLoudestFreqsInHertz)
         
-        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(chunk.rawData)
+        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(
+            chunk.rawData)
         
+        chunksThreeStepEnvelope = self.envelopeObj.threeStepEnvelope(chunk.rawData, meanWindowSize=200)
+
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
+        MessageServer.notifyEventClients(MsgTypes.UPDATE_PCM_CHART, data={"threeStepLiveEnvelope": chunksThreeStepEnvelope })
         self.notifyObservers(currentLiveAudio)
         # currentLiveAudio.parameters["PCMEnvelope"].append()
     
@@ -182,10 +189,8 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     
     def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
         pass
-        
-        
-        
-    #__________________________________________________________________________________________
+    
+    # __________________________________________________________________________________________
     
     # Used by observer pattern!
     def handleNewData(self, data):
@@ -216,4 +221,3 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
     def notifyObservers(self, data):
         for o in self.getObservers:
             o.handleNewData(data)
-            
