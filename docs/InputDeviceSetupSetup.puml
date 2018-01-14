@@ -1,0 +1,11 @@
+@startuml
+(*)  --> "Skan urządzeń wejściowych"
+--> "Wybór urządzenia"
+--> "Sprawdzenie parametrów urządzenia"
+--> "Ustawienie parametrów urządzenia
+     jako informacji dzielonych"
+--> "Utworzenie insttancji strumienia wejściowego
+        na bazie indeksu wybranego urządzenia"
+--> "Otwarcie strumienia wejściowego"
+-->(*)
+@enduml

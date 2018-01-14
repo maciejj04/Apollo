@@ -1,3 +1,4 @@
+from Commons import Settings
 from Commons.Settings import ENABLE_PLUGINS
 from src.MessageServer import MessageServer, MsgTypes
 from src.Observer import Observer
@@ -26,6 +27,9 @@ class PluginHandler:
     """
     
     def __init__(self):
+        if not Settings.ENABLE_PLUGINS:
+            Logger.info("Plugins DISABLED!")
+            
         self.pluginClassesObjects = []
         # TODO: plugins package paths external config
         import os

@@ -14,10 +14,8 @@ from src.MessageServer import MessageServer, MsgTypes
 # Observable for: ProcessingEngine
 class Ear():
     """
-    The Ear class provides access to continuously recorded microphone data.
+    The Ear class provides input device scan, instatiation and management of input Stream.
     """
-    _record: bool = False
-    _recordedFrames: int = 0
     
     def __init__(self):
         Observable.__init__(self)
@@ -98,7 +96,7 @@ class Ear():
         self.pyAudio.terminate()
     
     def stream_start(self):
-        """adds data to self.data until termination signal"""
+        """handles new data until termination signal"""
         self.setCommonAudioInformations()
         if self.stream is not None:
             self.stream.open()

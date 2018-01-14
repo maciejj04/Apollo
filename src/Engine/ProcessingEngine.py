@@ -172,26 +172,24 @@ class ProcessingEngine(BaseProcessingUtils, Observer, MessageClient, Observable)
         nLoudestFreqsInHertz = ProcessingEngine.findNLoudestFreqsFromFFT(spectrum=chunk.chunkAS, freqs=chunk.chunkFreqs)
         nLoudestFreqsInHertz = np.sort(nLoudestFreqsInHertz).tolist()
         currentLiveAudio.appendFreqEnvelopesValues(*nLoudestFreqsInHertz)
-        
-        currentLiveAudio.getLastChunk().baseFrequency = ProcessingEngine.estimateHzByAutocorrelationMethod(
-            chunk.rawData)
+
+        hzByAutocorr = ProcessingEngine.estimateHzByAutocorrelationMethod(chunk.rawData)
+        currentLiveAudio.getLastChunk().baseFrequency = hzByAutocorr
         
         chunksThreeStepEnvelope = self.envelopeObj.threeStepEnvelope(chunk.rawData, meanWindowSize=200)
+        self.getCurrentLiveAudio().envelope += chunksThreeStepEnvelope
 
         currentLiveAudio.parameters["frequencyEnvelope"].append(loudestFreqInHertz)
         MessageServer.notifyEventClients(MsgTypes.UPDATE_FREQS_CHART, data={"liveFreqsEnvelope": nLoudestFreqsInHertz})
         MessageServer.notifyEventClients(MsgTypes.UPDATE_PCM_CHART, data={"threeStepLiveEnvelope": chunksThreeStepEnvelope })
+        MessageServer.notifyEventClients(MsgTypes.NEW_HZ, data=hzByAutocorr)
         self.notifyObservers(currentLiveAudio)
         # currentLiveAudio.parameters["PCMEnvelope"].append()
     
     def setupNewLiveRecording(self):
         self.liveAudios.append(LiveAudio())
-    
-    def signalMatching(self, staticAudioRawData: np.ndarray, liveAudioRawData: np.ndarray):
-        pass
-    
+        
     # __________________________________________________________________________________________
-    
     # Used by observer pattern!
     def handleNewData(self, data):
         self.currentChunkNr += 1

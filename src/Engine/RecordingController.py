@@ -3,6 +3,7 @@ from src.tools.Logger import Logger
 from src.Commons.CommonAudioInfo import CommonAudioInfo as Cai
 import wave
 import numpy as np
+from time import gmtime, strftime
 
 class Recording:
     def __init__(self):
@@ -23,9 +24,9 @@ class Recording:
         raise NotImplementedError()
 
     @classmethod
-    def saveRecordedDataToFile(self, pcm: np.ndarray, fileName='Recorded'):
-        import random
-        waveFile = wave.open(fileName+str(random.randint(0, 99999))+".wav", 'wb')
+    def saveRecordedDataToFile(self, pcm: np.ndarray, fileName='Record'):
+        fileName += strftime("_%Y-%m-%d_%H-%M-%S", gmtime())
+        waveFile = wave.open(fileName + ".wav", 'wb')
         waveFile.setnchannels(Cai.numberOfChannels)
         waveFile.setsampwidth(Cai.sampleWidthInBytes)
         waveFile.setframerate(Cai.frameRate)

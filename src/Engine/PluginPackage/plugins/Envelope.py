@@ -70,8 +70,8 @@ class Envelope:
 
 
 if __name__ == "__main__":
-    f = wave.open("../../../../resources/whistle1.wav")
-    f2 = wave.open("../../../../resources/whistle1v3.wav") # sweep_230Hz_330Hz_-3dBFS_1s
+    f = wave.open("../../../../resources/osiem1.wav")
+    f2 = wave.open("../../../../resources/osiem2.wav") # sweep_230Hz_330Hz_-3dBFS_1s
     import matplotlib.pyplot as plt
     
     o1 = np.fromstring(f.readframes(f.getnframes()), dtype=np.int16)
@@ -89,8 +89,8 @@ if __name__ == "__main__":
     print("MyCorr = {}".format(corr))
     
     # corr picture
-    # corrObj = EnvelopesCorrelation(env1=envelope, env2=envelope2, windowSize=4410)
-    # corrObj.correlate()
+    corrObj = EnvelopesCorrelation(env1=envelope, env2=envelope2, windowSize=25181)
+    corrObj.correlate()
     
     plt.plot(o2, 'r', envelope, 'g', envelope2, 'b')
     plt.show()

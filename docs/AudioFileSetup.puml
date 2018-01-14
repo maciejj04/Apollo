@@ -1,0 +1,17 @@
+@startuml
+partition Konwerter {
+    "Dostosowanie liczby kanałów" --> "Dostosowanie  częstotliwości próbkowania"
+     --> "Dostosowanie szerokości próbki"
+}
+(*)  --> "Otwarcie pliku audio"
+If "potrzebuje konwertowania" then
+--> [Nie] "Ustawienie informacji dzielonych o pliku"
+else
+--> [Tak] "Dostosowanie liczby kanałów"
+Endif
+"Dostosowanie szerokości próbki" --> "Ustawienie informacji dzielonych o pliku"
+note left: np. całkowita liczba ramek \nz danymi w nagraniu
+--> "Ponowne wydobycie surowych danych (PCM)"
+--> "Wykonanie analizy wczytanego nagrania"
+-->(*)
+@enduml

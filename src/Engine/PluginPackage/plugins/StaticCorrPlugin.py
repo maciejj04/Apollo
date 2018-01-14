@@ -104,7 +104,7 @@ class StaticCorrPlugin(PluginAbstractModel):
             self.liveSpectrums = self.processSpectrumsFromRawData(self.liveAudioRawData)
             self.correlateSoundTracks()
             #self.dropCorrVectorsToFile()
-            self.print3DPlot(self.correlationVectors)
+            #self.print3DPlot(self.correlationVectors)
     
     def print3DPlot(self, arrayOfArrays):
         import matplotlib.pyplot as plt

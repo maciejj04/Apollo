@@ -33,6 +33,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         MessageServer.registerForEvent(self, MsgTypes.UPDATE_FREQ_SPECTR_CHART)
         MessageServer.registerForEvent(self, MsgTypes.UPDATE_FREQS_CHART)
         MessageServer.registerForEvent(self, MsgTypes.NEW_RECORDING)
+        MessageServer.registerForEvent(self, MsgTypes.NEW_HZ)
         
         self.setupUi(self)
         self.resize(1300, 900)
@@ -40,12 +41,13 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.fftsChart.plotItem.showGrid(True, True, 0.7)
         self.pcmsChart.plotItem.showGrid(True, True, 0.7)
         
-        self.loopbackCheckBox.stateChanged.connect(self._loopbackCheckBoxAction)
+        self.playbackCheckBox.stateChanged.connect(self._playbackCheckBoxAction)
         self.startButton.clicked.connect(self.startButtonAction)
         self.listen.stateChanged.connect(self.update)
         self.actionChoose_file.triggered.connect(self.generateChooseFileDialog)
         self.actionChange_microphone.triggered.connect(self.showChooseMicrophoneDialog)
         self.recordButton.clicked.connect(self.recordButtonAction)
+        
         self.ear = Ear()
         rawInputAudioData = Audio().loadFromPathAndAdjust().getRawDataFromWav()
         self.staticAudio = StaticAudio(rawData=rawInputAudioData)
@@ -56,7 +58,7 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         self.processingEngine.addObserver(self.interpretEngine)
         
         self.ear.stream.addObserver(self.processingEngine)
-        self.loopbackStreamHandler = OutputStream(staticAudio=self.staticAudio)
+        self.playbackStreamHandler = OutputStream(staticAudio=self.staticAudio)
         
         # charts Initialization
         liveFreqsEnvelopes = []
@@ -171,14 +173,14 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
         # separate thread(?)
         Recording.startRecording()
     
-    def _loopbackCheckBoxAction(self):
-        if self.loopbackCheckBox.isChecked():
-            self.loopbackStreamHandler.open()
-            self.ear.stream.addObserver(self.loopbackStreamHandler)
+    def _playbackCheckBoxAction(self):
+        if self.playbackCheckBox.isChecked():
+            self.playbackStreamHandler.open()
+            self.ear.stream.addObserver(self.playbackStreamHandler)
         
         else:
-            self.ear.stream.deleteObserver(self.loopbackStreamHandler)
-            self.loopbackStreamHandler.closeOutputStream()
+            self.ear.stream.deleteObserver(self.playbackStreamHandler)
+            self.playbackStreamHandler.closeOutputStream()
     
     def _updateFrequenciesChart(self, chartsFreqs: dict, yRange=[0, 2000]):
         
@@ -186,8 +188,10 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             for i in range(0, len(values)):
                 self.freqChartsWidget.yValuesDict[key][i].append(values[i])
         
-        self.HzLcd.display(chartsFreqs["liveFreqsEnvelope"][0])  # [0]???
         self.shouldUpdateFrequenciesChart = True
+    
+    def _updateHzLcd(self, hz: int):
+        self.HzLcd.display(hz)  # [0]???
     
     def _updatePcmsChart(self, data):
         for key, values in data.items():
@@ -219,7 +223,8 @@ class App(QtGui.QMainWindow, MainWindow.Ui_MainWindow):  # , MessageClient
             MsgTypes.UPDATE_PCM_CHART: self._updatePcmsChart,
             MsgTypes.UPDATE_FREQ_SPECTR_CHART: self._updateFreqSpectrumChart,
             MsgTypes.UPDATE_FREQS_CHART: self._updateFrequenciesChart,
-            MsgTypes.NEW_RECORDING: self._cleanUpFrequenciesChart
+            MsgTypes.NEW_RECORDING: self._cleanUpFrequenciesChart,
+            MsgTypes.NEW_HZ: self._updateHzLcd
         }[msgType](data)
     
     def _updateFreqSpectrumChart(self, chunk):

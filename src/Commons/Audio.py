@@ -17,7 +17,7 @@ class Audio:
     compType: str = None
     compName: str = None
     
-    def __init__(self, filePath='./resources/simpleWhistle.wav'):#444_1s,jestem, simpleWhistle, saxophone-weep, 220_440,220_pause_440_12s
+    def __init__(self, filePath='./resources/osiem1.wav'):#444_1s,jestem, simpleWhistle, saxophone-weep, 220_440,220_pause_440_12s
         self.filePath = filePath
 
     def loadFromPathAndAdjust(self, filePath: str = None):
@@ -61,7 +61,8 @@ class Audio:
         Fction should take any (TODO) audio file format hidden undaer filePath, convert it into wave and return with wave.open().
         """
         fileToConvert = AudioSegment.from_file(self.filePath)
-        # TODO: why pydub automatically converts 4byte width frame to 2byte while converting from mp3 to wav
+        # TODO: why pydub automatically converts 4byte width frame to 2byte while converting from mp3 to wav.
+        # TODO: ^ Or does he? :'D
         fileToConvert.export(out_f=exportPath, format="wav")
         return wave.open(exportPath, 'r')
 
@@ -113,6 +114,3 @@ class Audio:
                             self.compType, self.compName,
                             dateTime=str(datetime.now()))
                     )
-    
-    class OrgAudioInfo:
-        pass

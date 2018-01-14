@@ -32,24 +32,25 @@ class InterpretEngine(Observer):
     @executeInNewThread
     def interpret(self, liveAudio: LiveAudio):
         self.staticChunk, self.liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
-
+        
         chunksCorr = self.measureNormalizedCrossCorelationFromAudio(liveAudio)
         hzDiff = self.baseHzAbsoluteDifference(liveAudio)
         
         pearsonPCMCorr = self.pearsonCorrelationCoefficient(self.staticChunk.rawData, self.liveChunk.rawData)
         pearsonSpectrumCorr = self.pearsonCorrelationCoefficient(self.staticChunk.chunkAS, self.liveChunk.chunkAS)
         diffsTuple = self.compareNHighestAmplitudes(liveAudio)
-
+        
         Logger.interpretEngineLog("""[{chunkNr}] corr = {corr}
                         HzDiff = {HzDiff}
                         PerasonPCMCorr = {pearsonPCMCorr}
                         pearsonSpectrumCorr = {pearsonSpectrumCorr}
                         TopFreqsDiffs = {diffs}
                         """.format(chunkNr=liveAudio.getLastChunksIndex() - 1, corr=chunksCorr, HzDiff=hzDiff,
-                                          pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr,
-                                          diffs=diffsTuple))
-
+                                   pearsonPCMCorr=pearsonPCMCorr, pearsonSpectrumCorr=pearsonSpectrumCorr,
+                                   diffs=diffsTuple))
+        
         self.compareSpectrumCentroid()
+        Logger.info("PCM Envelopes correlation = {}".format(self.compareEnvelopes(liveAudio)))  # TODO: laterchange logger method.
     
     # can be extracted as a plugin
     def measureNormalizedCrossCorelationFromAudio(self, liveAudio: LiveAudio):
@@ -61,7 +62,7 @@ class InterpretEngine(Observer):
                 return sqrt(squareSum(dataSet1) * squareSum(dataSet2))
             
             return (np.correlate(data1, data2) / corrDenominator(data1, data2))[0]
-            
+        
         staticChunk, liveChunk = self._getCurrentCorrespondingChunks(liveAudio)
         return measureNormalizedCrossCorelation(data1=staticChunk.chunkAS, data2=liveChunk.chunkAS)
     
@@ -74,7 +75,7 @@ class InterpretEngine(Observer):
         # TODO: display the difference on HzDiff LCD
         return abs(staticChunk.baseFrequency - liveChunk.baseFrequency)
     
-    def pearsonCorrelationCoefficient(self, dataSet1: np.ndarray, dataSet2: np.ndarray):
+    def pearsonCorrelationCoefficient(self, dataSet1: np.ndarray, dataSet2: np.ndarray) -> float:
         return stats.pearsonr(dataSet1, dataSet2)[0]  # TODO: evaluate second return-tuple element!
     
     def _getCurrentCorrespondingChunks(self, liveAudio: LiveAudio) -> ():
@@ -85,13 +86,21 @@ class InterpretEngine(Observer):
     
     def compareSpectrumCentroid(self):
         diff = abs(self.staticChunk.spectralCentroid - self.liveChunk.spectralCentroid)
-        Logger.centroidLog("StatCentroid={}\tliveCentroid={}\tdiff={}".format(self.staticChunk.spectralCentroid, self.liveChunk.spectralCentroid, diff))
-
+        Logger.centroidLog("StatCentroid={}\tliveCentroid={}\tdiff={}".format(self.staticChunk.spectralCentroid,
+                                                                              self.liveChunk.spectralCentroid, diff))
+    
     def compareNHighestAmplitudes(self, liveAudio: LiveAudio) -> Tuple:
         processedChunkIndex = len(liveAudio.chunks) - 1
         liveAudioHighest = [liveAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
-        statAudioHighest = [self.staticAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in range(0, TOP_FREQS_COUNT)]
+        statAudioHighest = [self.staticAudio.nfrequencyEnvelopes[i][processedChunkIndex] for i in
+                            range(0, TOP_FREQS_COUNT)]
         
         diffsTuple = tuple([abs(statAudioHighest[i] - liveAudioHighest[i]) for i in range(0, TOP_FREQS_COUNT)])
         
         return diffsTuple
+    
+    def compareEnvelopes(self, liveAudio: LiveAudio) -> float:
+        liveEnvelope = liveAudio.envelope
+        staticEnvelope = self.staticAudio.envelope[:len(liveEnvelope)]
+        
+        return self.pearsonCorrelationCoefficient(staticEnvelope, liveEnvelope)
